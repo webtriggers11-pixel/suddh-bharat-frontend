@@ -1,0 +1,36 @@
+import type { Metadata } from "next";
+import { pageMetadata, structuredData } from "./lib/seo";
+import { SiteHeader } from "./components/home/SiteHeader";
+import { Hero } from "./components/home/Hero";
+import { TrustLedger } from "./components/home/TrustLedger";
+import { CategoryShelf } from "./components/home/CategoryShelf";
+import { WhyBand } from "./components/home/WhyBand";
+import { VerificationSteps } from "./components/home/VerificationSteps";
+import { FeaturedBrands } from "./components/home/FeaturedBrands";
+import { Newsletter } from "./components/home/Newsletter";
+import { SiteFooter } from "./components/home/SiteFooter";
+import { PWABadge } from "./components/pwa/PWABadge";
+import { JsonLd } from "./components/seo/JsonLd";
+
+// SEO is data-driven from app/config/seo.json (see app/lib/seo.ts).
+export const metadata: Metadata = pageMetadata("home");
+
+export default function Home() {
+  return (
+    <>
+      <SiteHeader />
+      <main id="top">
+        <Hero />
+        <TrustLedger />
+        <CategoryShelf />
+        <WhyBand />
+        <VerificationSteps />
+        <FeaturedBrands />
+        <Newsletter />
+      </main>
+      <SiteFooter />
+      <PWABadge />
+      <JsonLd data={structuredData()} />
+    </>
+  );
+}

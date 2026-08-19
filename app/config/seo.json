@@ -1,0 +1,41 @@
+{
+  "site": {
+    "name": "Shuddha",
+    "url": "https://shuddha.in",
+    "locale": "en_IN",
+    "tagline": "If it's on Shuddha, it's already been checked.",
+    "description": "Shuddha — India's curated marketplace for clean, verified food, baby, beauty and clothing brands. Every brand is checked against a published standard before it's listed."
+  },
+  "pages": {
+    "home": {
+      "path": "/",
+      "title": "Shuddha — India's curated marketplace for clean, verified brands",
+      "keywords": [
+        "clean products India",
+        "verified brands",
+        "non-toxic baby",
+        "clean beauty",
+        "organic clothing",
+        "additive-free food"
+      ],
+      "openGraph": {
+        "title": "Shuddha — clean, verified brands, checked before they're listed"
+      },
+      "twitter": {
+        "title": "Shuddha — clean, verified brands"
+      }
+    },
+    "our-standard": {
+      "path": "/our-standard",
+      "title": "Our Standard — what \"clean\" actually means on Shuddha",
+      "description": "The published clean standard every Shuddha brand is checked against, category by category — food, baby, beauty, and clothing.",
+      "keywords": ["clean standard", "ingredient disclosure", "non-toxic", "verified brands"]
+    },
+    "sell": {
+      "path": "/sell",
+      "title": "Sell on Shuddha — a shelf built for clean brands",
+      "description": "List your clean brand on Shuddha: zero listing fees, the verification badge, and an audience already looking for what you make.",
+      "keywords": ["sell clean products", "clean brand marketplace", "vendor application", "become a seller India"]
+    }
+  }
+}
