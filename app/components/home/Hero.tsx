@@ -21,11 +21,19 @@ export function Hero() {
           and clothing brands — so you don&apos;t have to read every label
           yourself.
         </p>
-        <div className="mt-8 flex flex-wrap gap-3.5">
-          <Button href="#categories" variant="primary">
+        <div className="mt-8 flex flex-col gap-3.5 sm:flex-row sm:flex-wrap">
+          <Button
+            href="#categories"
+            variant="primary"
+            className="w-full text-center sm:w-auto"
+          >
             Shop the verified shelf
           </Button>
-          <Button href="#standard" variant="secondary">
+          <Button
+            href="#standard"
+            variant="secondary"
+            className="w-full text-center sm:w-auto"
+          >
             See our clean standard
           </Button>
         </div>
