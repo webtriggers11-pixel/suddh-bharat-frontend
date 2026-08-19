@@ -3,10 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { NAV } from "../../lib/site";
+import { useAuth } from "../../lib/auth/AuthProvider";
 import { Container } from "../ui/Container";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
+
+  const authHref = user ? "/account" : "/login";
+  const authLabel = user ? (user.name ?? "Account") : "Sign in";
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-paper/90 backdrop-blur">
@@ -30,6 +35,12 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <Link
+            href={authHref}
+            className="hidden font-body text-sm font-medium text-ink hover:text-forest sm:inline"
+          >
+            {authLabel}
+          </Link>
           <a
             href="#"
             className="rounded-chip bg-forest px-[18px] py-2.5 font-mono text-xs tracking-wide text-paper"
@@ -68,6 +79,15 @@ export function SiteHeader() {
               </Link>
             </li>
           ))}
+          <li className="border-t border-line">
+            <Link
+              href={authHref}
+              onClick={() => setOpen(false)}
+              className="block py-3 font-body text-base font-semibold text-forest"
+            >
+              {authLabel}
+            </Link>
+          </li>
         </Container>
       </nav>
     </header>
