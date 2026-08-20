@@ -3,12 +3,16 @@ import userEvent from "@testing-library/user-event";
 import { describe, it, expect } from "vitest";
 import { SiteHeader } from "./SiteHeader";
 import { AuthProvider } from "../../lib/auth/AuthProvider";
+import { CartProvider } from "../../lib/cart/CartProvider";
 
-// No tokens in localStorage → AuthProvider makes no network call.
+// No tokens in localStorage → AuthProvider makes no network call and the cart
+// stays empty (CartProvider skips the fetch when signed out).
 const renderHeader = () =>
   render(
     <AuthProvider>
-      <SiteHeader />
+      <CartProvider>
+        <SiteHeader />
+      </CartProvider>
     </AuthProvider>,
   );
 

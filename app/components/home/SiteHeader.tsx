@@ -4,12 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { NAV } from "../../lib/site";
 import { useAuth } from "../../lib/auth/AuthProvider";
+import { useCart } from "../../lib/cart/CartProvider";
 import { Container } from "../ui/Container";
 import { Collapse } from "../motion/Collapse";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
+  const { count } = useCart();
 
   const authHref = user ? "/account" : "/login";
   const authLabel = user ? (user.name ?? "Account") : "Sign in";
@@ -42,12 +44,12 @@ export function SiteHeader() {
           >
             {authLabel}
           </Link>
-          <a
-            href="#"
+          <Link
+            href="/cart"
             className="rounded-chip bg-forest px-[18px] py-2.5 font-mono text-xs tracking-wide text-paper"
           >
-            CART (0)
-          </a>
+            CART ({count})
+          </Link>
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}

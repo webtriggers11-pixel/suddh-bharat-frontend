@@ -23,6 +23,10 @@ interface AuthState {
   verifyOtp: (phone: string, code: string) => Promise<void>;
   applyResult: (result: AuthResult) => void;
   logout: () => Promise<void>;
+  /** Replace the current user in place (e.g. after a profile edit). */
+  setUser: (user: AuthUser) => void;
+  /** Current access token (from storage), or null when signed out. */
+  getToken: () => string | null;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -108,9 +112,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     clear();
   }, [clear]);
 
+  const getToken = useCallback(() => readTokens().access, []);
+
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, verifyOtp, applyResult: store, logout }}
+      value={{
+        user,
+        loading,
+        login,
+        register,
+        verifyOtp,
+        applyResult: store,
+        logout,
+        setUser,
+        getToken,
+      }}
     >
       {children}
     </AuthContext.Provider>

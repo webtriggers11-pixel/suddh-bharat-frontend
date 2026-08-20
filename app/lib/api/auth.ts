@@ -69,5 +69,14 @@ export const authApi = {
   logout: (refreshToken: string) =>
     request<{ success: boolean }>('/auth/logout', json({ refreshToken })),
   me: (accessToken: string) => request<AuthUser>('/auth/me', { auth: accessToken }),
+  updateProfile: (
+    accessToken: string,
+    input: { name?: string; phone?: string },
+  ) =>
+    request<AuthUser>('/users/me', {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+      auth: accessToken,
+    }),
   googleUrl: () => `${API_URL}/auth/google`,
 };
