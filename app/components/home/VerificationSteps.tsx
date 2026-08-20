@@ -1,5 +1,6 @@
 import { Container } from "../ui/Container";
 import { SectionHeading } from "../ui/SectionHeading";
+import { Reveal } from "../motion/Reveal";
 import { STEPS } from "./content";
 
 export function VerificationSteps() {
@@ -9,8 +10,8 @@ export function VerificationSteps() {
         How a brand earns the badge
       </SectionHeading>
       <ol className="mt-12 grid gap-9 md:grid-cols-3 md:gap-0">
-        {STEPS.map((step) => (
-          <li key={step.n} className="md:pr-6">
+        {STEPS.map((step, i) => (
+          <Reveal as="li" key={step.n} delay={i * 0.08} className="md:pr-6">
             <span
               aria-hidden
               className="flex h-11 w-11 items-center justify-center rounded-full bg-forest font-mono text-[13px] text-paper"
@@ -23,7 +24,7 @@ export function VerificationSteps() {
             <p className="mt-2 font-body text-sm leading-relaxed text-gray">
               {step.copy}
             </p>
-          </li>
+          </Reveal>
         ))}
       </ol>
     </Container>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { NAV } from "../../lib/site";
 import { useAuth } from "../../lib/auth/AuthProvider";
 import { Container } from "../ui/Container";
+import { Collapse } from "../motion/Collapse";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -59,37 +60,34 @@ export function SiteHeader() {
         </div>
       </Container>
 
-      <nav
-        id="mobile-nav"
-        aria-label="Mobile"
-        hidden={!open}
-        className="border-t border-line bg-paper lg:hidden"
-      >
-        <Container as="ul" className="flex flex-col">
-          {NAV.map((item) => (
-            <li key={item.label}>
+      <Collapse open={open} id="mobile-nav">
+        <nav aria-label="Mobile" className="border-t border-line bg-paper lg:hidden">
+          <Container as="ul" className="flex flex-col">
+            {NAV.map((item) => (
+              <li key={item.label}>
+                <Link
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className={`block py-3 font-body text-base ${
+                    item.muted ? "text-gray" : "text-ink"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+            <li className="border-t border-line">
               <Link
-                href={item.href}
+                href={authHref}
                 onClick={() => setOpen(false)}
-                className={`block py-3 font-body text-base ${
-                  item.muted ? "text-gray" : "text-ink"
-                }`}
+                className="block py-3 font-body text-base font-semibold text-forest"
               >
-                {item.label}
+                {authLabel}
               </Link>
             </li>
-          ))}
-          <li className="border-t border-line">
-            <Link
-              href={authHref}
-              onClick={() => setOpen(false)}
-              className="block py-3 font-body text-base font-semibold text-forest"
-            >
-              {authLabel}
-            </Link>
-          </li>
-        </Container>
-      </nav>
+          </Container>
+        </nav>
+      </Collapse>
     </header>
   );
 }

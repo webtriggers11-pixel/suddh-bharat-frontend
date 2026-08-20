@@ -1,5 +1,7 @@
 import { Container } from "../ui/Container";
 import { SectionHeading } from "../ui/SectionHeading";
+import { Reveal } from "../motion/Reveal";
+import { Tappable } from "../motion/Tappable";
 import { CATEGORIES, type CategoryTone } from "./content";
 
 const TONES: Record<CategoryTone, { card: string; index: string; copy: string }> = {
@@ -18,14 +20,11 @@ const TONES: Record<CategoryTone, { card: string; index: string; copy: string }>
 
 function CategoryCard({ category }: { category: (typeof CATEGORIES)[number] }) {
   const t = TONES[category.tone];
-  const wide = category.index.startsWith("04"); // clothing spans full width on lg
-  const span = category.featured
-    ? "lg:row-span-2 min-h-[280px] lg:min-h-[560px]"
-    : wide
-      ? "lg:col-span-2 min-h-[220px]"
-      : "min-h-[220px]";
+  const minH = category.featured
+    ? "min-h-[280px] lg:min-h-[560px]"
+    : "min-h-[220px]";
   return (
-    <article className={`flex flex-col justify-end rounded-card p-7 ${t.card} ${span}`}>
+    <article className={`flex h-full flex-col justify-end rounded-card p-7 ${t.card} ${minH}`}>
       <p className={`mb-2 font-mono text-xs ${t.index}`}>{category.index}</p>
       <h3 className="font-display text-[26px] font-semibold">{category.title}</h3>
       <p className={`mt-2 max-w-xs font-body text-sm leading-relaxed ${t.copy}`}>
@@ -35,6 +34,12 @@ function CategoryCard({ category }: { category: (typeof CATEGORIES)[number] }) {
   );
 }
 
+function gridSpan(category: (typeof CATEGORIES)[number]): string {
+  if (category.featured) return "lg:row-span-2";
+  if (category.index.startsWith("04")) return "lg:col-span-2";
+  return "";
+}
+
 export function CategoryShelf() {
   return (
     <Container as="section" id="categories" className="py-20 md:py-24">
@@ -42,8 +47,12 @@ export function CategoryShelf() {
         Four categories. One published standard.
       </SectionHeading>
       <div className="mt-12 grid gap-5 lg:grid-cols-2">
-        {CATEGORIES.map((c) => (
-          <CategoryCard key={c.index} category={c} />
+        {CATEGORIES.map((c, i) => (
+          <Reveal key={c.index} className={gridSpan(c)} delay={i * 0.06}>
+            <Tappable className="h-full">
+              <CategoryCard category={c} />
+            </Tappable>
+          </Reveal>
         ))}
       </div>
     </Container>
