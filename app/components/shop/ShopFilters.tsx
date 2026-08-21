@@ -129,8 +129,8 @@ export function ShopFilters({
 
   return (
     <aside className={className} aria-label="Product filters">
-      {/* Mobile: collapsible disclosure */}
-      <div className="lg:hidden">
+      {/* Mobile: sticky collapsible disclosure */}
+      <div className="sticky top-[76px] z-30 -mx-5 bg-paper/95 px-5 py-3 backdrop-blur sm:-mx-8 sm:px-8 lg:hidden">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}

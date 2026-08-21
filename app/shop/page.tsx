@@ -50,16 +50,16 @@ export default async function ShopPage({
           intro="Every product here comes from a brand checked against our published standard — clean by default, verified by category."
         />
         <Container className="py-10">
-          <div className="grid gap-6 lg:grid-cols-[1fr_240px] lg:items-start lg:gap-12">
+          <div className="grid gap-6 lg:grid-cols-[240px_1fr] lg:items-start lg:gap-12">
             <ShopFilters
               categories={categories}
               activeCategory={category}
               activeSort={sortParam}
               total={page.total}
-              className="lg:order-2"
+              className="lg:order-1"
             />
 
-            <div className="lg:order-1">
+            <div className="lg:order-2">
               <p className="mb-5 font-mono text-[11px] uppercase tracking-wider text-gray lg:hidden">
                 {page.total} {page.total === 1 ? "product" : "products"}
               </p>
