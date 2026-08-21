@@ -25,6 +25,12 @@ export async function generateMetadata({
   };
 }
 
+const TRUST = [
+  "Checked against the published Shuddha standard",
+  "Clean ingredients, verified by category",
+  "Ships across India",
+];
+
 export default async function ProductPage({
   params,
 }: {
@@ -41,25 +47,39 @@ export default async function ProductPage({
     <>
       <SiteHeader />
       <main>
-        <Container className="py-8">
-          <Link
-            href="/shop"
-            className="font-mono text-[11px] uppercase tracking-wider text-gold hover:text-forest"
+        <Container className="py-6">
+          <nav
+            aria-label="Breadcrumb"
+            className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-gray"
           >
-            ← Back to shop
-          </Link>
+            <Link href="/shop" className="text-gold hover:text-forest">
+              Shop
+            </Link>
+            <span aria-hidden className="text-line">
+              /
+            </span>
+            <span className="min-w-0 truncate text-gray">{product.name}</span>
+          </nav>
         </Container>
 
-        <Container className="grid gap-10 pb-16 lg:grid-cols-2">
+        <Container className="grid items-start gap-10 pb-20 lg:grid-cols-2">
           <ProductGallery images={product.images} alt={product.name} />
 
-          <div className="flex flex-col">
+          <div className="flex flex-col lg:sticky lg:top-[92px]">
             {product.isHandmade && <Eyebrow>Handmade · Verified</Eyebrow>}
             <h1 className="mt-3 font-display text-[clamp(28px,3.4vw,40px)] font-semibold leading-tight text-ink">
               {product.name}
             </h1>
 
-            <div className="mt-4 flex items-baseline gap-3">
+            {product.reviewCount > 0 && (
+              <p className="mt-3 font-mono text-xs tracking-wide text-gray">
+                <span className="text-gold">★</span>{" "}
+                {product.avgRating.toFixed(1)} · {product.reviewCount}{" "}
+                {product.reviewCount === 1 ? "review" : "reviews"}
+              </p>
+            )}
+
+            <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-2">
               <span className="font-display text-3xl font-semibold text-forest">
                 {formatINR(product.priceMinor)}
               </span>
@@ -110,6 +130,20 @@ export default async function ProductPage({
                 maxQty={product.stock}
               />
             </div>
+
+            <ul className="mt-8 flex flex-col gap-2.5 border-t border-line pt-6">
+              {TRUST.map((claim) => (
+                <li
+                  key={claim}
+                  className="flex items-start gap-2.5 font-body text-[13px] text-gray"
+                >
+                  <span aria-hidden className="font-mono text-forest">
+                    ✓
+                  </span>
+                  {claim}
+                </li>
+              ))}
+            </ul>
 
             {product.tags.length > 0 && (
               <ul className="mt-8 flex flex-wrap gap-2">
