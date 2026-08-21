@@ -25,16 +25,25 @@ export function VerificationStamp() {
   const reduce = useReducedMotion();
 
   return (
-    <motion.svg
-      viewBox="0 0 300 300"
-      role="img"
-      aria-label="Shuddha verified seal — checked and clean"
+    <motion.div
       className="w-[min(320px,80%)]"
-      initial={reduce ? false : { opacity: 0, scale: 0.92 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: DURATION.slow, ease: EASE }}
-      whileHover={reduce ? undefined : { scale: 1.03 }}
+      animate={reduce ? undefined : { y: [0, -8, 0] }}
+      transition={
+        reduce
+          ? undefined
+          : { duration: 6, ease: "easeInOut", repeat: Infinity }
+      }
     >
+      <motion.svg
+        viewBox="0 0 300 300"
+        role="img"
+        aria-label="Shuddha verified seal — checked and clean"
+        className="w-full"
+        initial={reduce ? false : { opacity: 0, scale: 0.92 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: DURATION.slow, ease: EASE }}
+        whileHover={reduce ? undefined : { scale: 1.03 }}
+      >
       <defs>
         <path
           id="stamp-ring"
@@ -102,6 +111,7 @@ export function VerificationStamp() {
       >
         CHECKED · CLEAN
       </text>
-    </motion.svg>
+      </motion.svg>
+    </motion.div>
   );
 }

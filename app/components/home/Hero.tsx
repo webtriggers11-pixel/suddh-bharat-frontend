@@ -38,7 +38,28 @@ export function Hero() {
           </Button>
         </div>
       </div>
-      <div className="flex items-center justify-center">
+      <div className="relative flex items-center justify-center">
+        {/* Soft gold aura + faint concentric rings echoing the seal motif.
+            Decorative only; design-system tokens, no raw hex. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center"
+        >
+          <div
+            className="aspect-square w-[78%] rounded-full opacity-70 blur-2xl"
+            style={{
+              background:
+                "radial-gradient(circle, var(--color-gold-dim) 0%, transparent 70%)",
+            }}
+          />
+        </div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center"
+        >
+          <div className="aspect-square w-[88%] rounded-full border border-line/70" />
+          <div className="absolute aspect-square w-full rounded-full border border-line/40" />
+        </div>
         <VerificationStamp />
       </div>
     </Container>
