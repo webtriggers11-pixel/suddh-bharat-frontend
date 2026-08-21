@@ -58,7 +58,7 @@ export default async function ProductPage({
             <span aria-hidden className="text-line">
               /
             </span>
-            <span className="truncate text-gray">{product.name}</span>
+            <span className="min-w-0 truncate text-gray">{product.name}</span>
           </nav>
         </Container>
 
@@ -79,7 +79,7 @@ export default async function ProductPage({
               </p>
             )}
 
-            <div className="mt-4 flex items-baseline gap-3">
+            <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-2">
               <span className="font-display text-3xl font-semibold text-forest">
                 {formatINR(product.priceMinor)}
               </span>
