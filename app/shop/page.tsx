@@ -50,7 +50,7 @@ export default async function ShopPage({
           intro="Every product here comes from a brand checked against our published standard — clean by default, verified by category."
         />
         <Container className="py-10">
-          <div className="grid gap-6 lg:grid-cols-[240px_1fr] lg:items-start lg:gap-12">
+          <div className="grid gap-6 lg:grid-cols-[240px_1fr] lg:gap-12">
             <ShopFilters
               categories={categories}
               activeCategory={category}
