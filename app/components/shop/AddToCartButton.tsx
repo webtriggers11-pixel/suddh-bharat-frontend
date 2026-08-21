@@ -91,7 +91,7 @@ export function AddToCartButton({
             type="button"
             onClick={onAdd}
             disabled={busy}
-            className="w-full rounded-chip bg-forest px-6 py-3 font-body text-sm font-semibold text-paper disabled:opacity-60"
+            className="w-full rounded-chip bg-forest px-6 py-3 font-body text-sm font-semibold text-paper transition-colors duration-200 hover:bg-forest-light disabled:opacity-60"
           >
             {busy ? "Adding…" : added ? "Added ✓" : "Add to cart"}
           </button>

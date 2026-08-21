@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { SiteHeader } from "../components/home/SiteHeader";
 import { SiteFooter } from "../components/home/SiteFooter";
 import { PageHero } from "../components/ui/PageHero";
@@ -48,40 +49,45 @@ export default async function ShopPage({
           title="The Shuddha catalog."
           intro="Every product here comes from a brand checked against our published standard — clean by default, verified by category."
         />
-        <Container className="py-10">
+        <Container className="pb-16">
           <ShopFilters
             categories={categories}
             activeCategory={category}
             activeSort={sortParam}
+            total={page.total}
           />
 
           {page.items.length === 0 ? (
-            <div className="py-24 text-center">
-              <p className="font-display text-2xl font-semibold text-ink">
+            <div className="mx-auto max-w-md rounded-card border border-line bg-paper-dim px-6 py-20 text-center">
+              <p className="font-mono text-[11px] uppercase tracking-wider text-gold">
+                Empty shelf
+              </p>
+              <p className="mt-4 font-display text-2xl font-semibold text-ink">
                 Nothing here yet.
               </p>
               <p className="mt-2 font-body text-gray">
                 Try a different category, or check back soon.
               </p>
+              <Link
+                href="/shop"
+                className="mt-6 inline-block rounded-chip bg-forest px-6 py-3 font-body text-sm font-semibold text-paper"
+              >
+                View all products
+              </Link>
             </div>
           ) : (
-            <>
-              <p className="pt-6 font-mono text-[11px] uppercase tracking-wider text-gray">
-                {page.total} {page.total === 1 ? "product" : "products"}
-              </p>
-              <ul className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-                {page.items.map((product, i) => (
-                  <Reveal
-                    as="li"
-                    key={product.id}
-                    delay={Math.min(i * 0.04, 0.32)}
-                    className="h-full"
-                  >
-                    <ProductCard product={product} />
-                  </Reveal>
-                ))}
-              </ul>
-            </>
+            <ul className="mt-8 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
+              {page.items.map((product, i) => (
+                <Reveal
+                  as="li"
+                  key={product.id}
+                  delay={Math.min(i * 0.04, 0.32)}
+                  className="h-full"
+                >
+                  <ProductCard product={product} />
+                </Reveal>
+              ))}
+            </ul>
           )}
         </Container>
       </main>
