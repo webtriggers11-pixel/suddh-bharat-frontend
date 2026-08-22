@@ -71,16 +71,21 @@ export function discountPct(priceMinor: number, mrpMinor: number): number {
   return Math.round(((mrpMinor - priceMinor) / mrpMinor) * 100);
 }
 
-// Storefront catalog is read-heavy and changes rarely, so we lean on the Next.js
-// Data Cache (revalidate + tags) instead of hitting the backend every request —
-// cheap horizontal scaling without Redis. Admin writes can later bust a tag via
-// revalidateTag('categories'|'products'). Redis stays a future option for
-// session/cart/rate-limit scale (ADR-0010 revisit trigger).
+// Storefront catalog freshness. Categories change rarely → cached (Next Data
+// Cache). PRODUCTS carry live stock, so they must be fresh: after a purchase the
+// shopper must see the real "in stock"/"N available" (a cached snapshot showed
+// stale stock — the reported bug). `revalidate: 0` = always fresh, matching the
+// uncached client-side infinite-scroll fetch so page-1 and page-2+ agree. When a
+// products data cache is reintroduced, bust it via revalidateTag('products') /
+// revalidateTag(`product:${slug}`) on order-paid + admin writes (ADR-0010 revisit).
 const CACHE = {
   categories: { revalidate: 300, tags: ["categories"] },
-  products: { revalidate: 60, tags: ["products"] },
+  // Products carry live stock. A short TTL bounds staleness, and the backend
+  // busts these tags via POST /api/revalidate on order-paid + admin writes for
+  // immediate freshness — so this is a safety net, not the primary mechanism.
+  products: { revalidate: 120, tags: ["products"] },
   product: (slug: string) => ({
-    revalidate: 60,
+    revalidate: 120,
     tags: ["products", `product:${slug}`],
   }),
 } as const;
@@ -135,3 +140,73 @@ export const catalogApi = {
       CACHE.product(slug),
     ),
 };
+
+/** Build the products query string shared by server + client fetchers. */
+function productsQuery(filters: ProductFilters): string {
+  const qs = new URLSearchParams();
+  if (filters.categorySlug) qs.set("categorySlug", filters.categorySlug);
+  if (filters.subcategorySlug) qs.set("subcategorySlug", filters.subcategorySlug);
+  if (filters.search) qs.set("search", filters.search);
+  if (filters.sort) qs.set("sort", filters.sort);
+  if (filters.isFeatured) qs.set("isFeatured", "true");
+  qs.set("page", String(filters.page ?? 1));
+  qs.set("pageSize", String(filters.pageSize ?? 24));
+  return qs.toString();
+}
+
+/**
+ * Browser-side products fetch for infinite scroll (pages 2+). Unlike
+ * `catalogApi.products`, this does NOT use the Next Data Cache — it runs in the
+ * client. Degrades to an empty page on error so the grid never crashes.
+ */
+export async function fetchProductsClient(
+  filters: ProductFilters,
+): Promise<Paginated<Product>> {
+  const empty: Paginated<Product> = {
+    items: [],
+    total: 0,
+    page: filters.page ?? 1,
+    pageSize: filters.pageSize ?? 24,
+    totalPages: 0,
+  };
+  try {
+    const res = await fetch(`${API_URL}/products?${productsQuery(filters)}`);
+    if (!res.ok) return empty;
+    return (await res.json()) as Paginated<Product>;
+  } catch {
+    return empty;
+  }
+}
+
+/** A lightweight search suggestion item (autocomplete). */
+export interface SuggestItem {
+  id: string;
+  name: string;
+  slug: string;
+  image?: string | null;
+  priceMinor?: number;
+}
+
+export interface SuggestResult {
+  products: SuggestItem[];
+  suggestions: string[];
+}
+
+/** Autocomplete for the search bar (backend `suggest=true`). */
+export async function fetchSuggestions(search: string): Promise<SuggestResult> {
+  const empty: SuggestResult = { products: [], suggestions: [] };
+  const q = search.trim();
+  if (q.length < 2) return empty;
+  try {
+    const qs = new URLSearchParams({ suggest: "true", search: q, pageSize: "6" });
+    const res = await fetch(`${API_URL}/products?${qs.toString()}`);
+    if (!res.ok) return empty;
+    const data = (await res.json()) as Partial<SuggestResult>;
+    return {
+      products: Array.isArray(data.products) ? data.products : [],
+      suggestions: Array.isArray(data.suggestions) ? data.suggestions : [],
+    };
+  } catch {
+    return empty;
+  }
+}

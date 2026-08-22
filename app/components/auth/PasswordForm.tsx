@@ -6,6 +6,20 @@ import { useAuth } from "../../lib/auth/AuthProvider";
 import { ApiError } from "../../lib/api/auth";
 import { Field } from "../ui/Field";
 
+/** Only allow same-site relative paths as a post-login destination (no open redirect). */
+function safeDest(raw: string | null): string {
+  if (raw && raw.startsWith("/") && !raw.startsWith("//")) return raw;
+  return "/account";
+}
+
+/** The ?redirect= / ?next= destination, read from the live URL (no useSearchParams
+ *  → avoids a Suspense/CSR-bailout requirement on the login page). */
+function redirectDest(): string {
+  if (typeof window === "undefined") return "/account";
+  const p = new URLSearchParams(window.location.search);
+  return safeDest(p.get("redirect") ?? p.get("next"));
+}
+
 /** Email + password sign-in / sign-up form. */
 export function PasswordForm({ mode }: { mode: "login" | "register" }) {
   const { login, register } = useAuth();
@@ -23,7 +37,8 @@ export function PasswordForm({ mode }: { mode: "login" | "register" }) {
     try {
       if (mode === "register") await register(email, password, name || undefined);
       else await login(email, password);
-      router.push("/account");
+      // Return to wherever the shopper came from, else /account.
+      router.push(redirectDest());
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong");
       setBusy(false);

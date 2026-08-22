@@ -8,6 +8,8 @@ import { Container } from "../../components/ui/Container";
 import { Eyebrow } from "../../components/ui/Eyebrow";
 import { ProductGallery } from "../../components/shop/ProductGallery";
 import { AddToCartButton } from "../../components/shop/AddToCartButton";
+import { LikeButton } from "../../components/shop/LikeButton";
+import { ProductReviews } from "../../components/shop/ProductReviews";
 import { catalogApi, discountPct, formatINR } from "../../lib/api/catalog";
 
 export async function generateMetadata({
@@ -122,12 +124,21 @@ export default async function ProductPage({
               )}
             </dl>
 
-            <div className="mt-8">
+            <div className="mt-8 flex flex-wrap items-start gap-3">
               <AddToCartButton
                 productId={product.id}
+                name={product.name}
                 slug={product.slug}
+                image={product.images[0] ?? null}
+                priceMinor={product.priceMinor}
+                mrpMinor={product.mrpMinor}
                 inStock={inStock}
                 maxQty={product.stock}
+              />
+              <LikeButton
+                productId={product.id}
+                redirectTo={`/product/${product.slug}`}
+                variant="full"
               />
             </div>
 
@@ -158,6 +169,8 @@ export default async function ProductPage({
               </ul>
             )}
           </div>
+
+          <ProductReviews productId={product.id} slug={product.slug} />
         </Container>
       </main>
       <SiteFooter />

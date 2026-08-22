@@ -12,7 +12,7 @@ import { useCart } from "../lib/cart/CartProvider";
 import { formatINR } from "../lib/api/catalog";
 
 export default function CartPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { loading: authLoading } = useAuth();
   const { cart, setQuantity, remove, loading } = useCart();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -47,12 +47,10 @@ export default function CartPage() {
             </p>
           )}
 
-          {!user && !authLoading ? (
-            <EmptyState
-              title="Sign in to view your cart"
-              body="Your cart is saved to your account."
-              cta={{ href: "/login?redirect=/cart", label: "Sign in" }}
-            />
+          {authLoading || loading ? (
+            <p className="py-16 text-center font-body text-gray">
+              Loading your cart…
+            </p>
           ) : cart.items.length === 0 ? (
             <EmptyState
               title="Your cart is empty"

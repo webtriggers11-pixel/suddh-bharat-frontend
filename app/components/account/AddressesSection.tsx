@@ -1,56 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Panel } from "../ui/Panel";
 import { StatusPill } from "../ui/StatusPill";
 import { Reveal } from "../motion/Reveal";
 import { Collapse } from "../motion/Collapse";
 import { Tappable } from "../motion/Tappable";
 import { AddressForm } from "./AddressForm";
-import { useAuth } from "../../lib/auth/AuthProvider";
-import { addressApi, type Address } from "../../lib/api/orders";
+import { useAddresses } from "../../lib/addresses/useAddresses";
 
 export function AddressesSection() {
-  const { user, getToken } = useAuth();
-  const [addresses, setAddresses] = useState<Address[]>([]);
-  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+  const { addresses, loading, isError, setDefault, remove, refresh } =
+    useAddresses();
   const [showForm, setShowForm] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const load = async () => {
-    const token = getToken();
-    if (!token) {
-      setState("error");
-      return;
-    }
-    try {
-      setAddresses(await addressApi.list(token));
-      setState("ready");
-    } catch {
-      setState("error");
-    }
-  };
+  const state: "loading" | "ready" | "error" = loading
+    ? "loading"
+    : isError
+      ? "error"
+      : "ready";
 
-  useEffect(() => {
-    let active = true;
-    queueMicrotask(async () => {
-      if (active) await load();
-    });
-    return () => {
-      active = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  const mutate = async (id: string, fn: (token: string) => Promise<unknown>) => {
-    const token = getToken();
-    if (!token) return;
+  // The hook mutations invalidate the cached list, so the grid refreshes itself.
+  const mutate = async (id: string, fn: () => Promise<unknown>) => {
     setBusyId(id);
     setError(null);
     try {
-      await fn(token);
-      await load();
+      await fn();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
     } finally {
@@ -80,7 +57,7 @@ export function AddressesSection() {
           makeDefault={addresses.length === 0}
           onSaved={() => {
             setShowForm(false);
-            void load();
+            void refresh();
           }}
           onCancel={() => setShowForm(false)}
         />
@@ -121,9 +98,7 @@ export function AddressesSection() {
                       <button
                         type="button"
                         disabled={busyId === a.id}
-                        onClick={() =>
-                          void mutate(a.id, (t) => addressApi.setDefault(t, a.id))
-                        }
+                        onClick={() => void mutate(a.id, () => setDefault(a.id))}
                         className="text-gray hover:text-forest disabled:opacity-40"
                       >
                         Set default
@@ -138,9 +113,7 @@ export function AddressesSection() {
                           ? "Linked to an order — cannot be deleted"
                           : undefined
                       }
-                      onClick={() =>
-                        void mutate(a.id, (t) => addressApi.remove(t, a.id))
-                      }
+                      onClick={() => void mutate(a.id, () => remove(a.id))}
                       className="text-gray hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       Delete

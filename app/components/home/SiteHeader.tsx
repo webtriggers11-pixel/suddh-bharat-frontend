@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { NAV } from "../../lib/site";
 import { useAuth } from "../../lib/auth/AuthProvider";
 import { useCart } from "../../lib/cart/CartProvider";
+import { useWishlist } from "../../lib/wishlist/WishlistProvider";
+import { SearchBar } from "../shop/SearchBar";
 import { Container } from "../ui/Container";
 import { Collapse } from "../motion/Collapse";
 
@@ -12,8 +15,13 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
   const { count } = useCart();
+  const { count: wishlistCount } = useWishlist();
 
-  const authHref = user ? "/account" : "/login";
+  const pathname = usePathname();
+  // Signed-out → carry the current page so login returns here (not always /account).
+  const authHref = user
+    ? "/account"
+    : `/login?redirect=${encodeURIComponent(pathname || "/")}`;
   const authLabel = user ? (user.name ?? "Account") : "Sign in";
 
   return (
@@ -23,7 +31,9 @@ export function SiteHeader() {
           SHUDDHA<span className="text-gold">.</span>
         </Link>
 
-        <nav aria-label="Primary" className="hidden items-center gap-8 lg:flex">
+        <SearchBar className="mx-4 hidden max-w-md flex-1 md:block lg:mx-8" />
+
+        <nav aria-label="Primary" className="hidden items-center gap-8 xl:flex">
           {NAV.map((item) => (
             <Link
               key={item.label}
@@ -45,8 +55,32 @@ export function SiteHeader() {
             {authLabel}
           </Link>
           <Link
+            href="/wishlist"
+            aria-label={`Wishlist (${wishlistCount})`}
+            className="relative hidden text-ink hover:text-forest sm:inline-flex"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="22"
+              height="22"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />
+            </svg>
+            {wishlistCount > 0 && (
+              <span className="absolute -right-2 -top-2 grid h-4 min-w-4 place-items-center rounded-full bg-gold px-1 font-mono text-[10px] font-bold text-ink">
+                {wishlistCount}
+              </span>
+            )}
+          </Link>
+          <Link
             href="/cart"
-            className="rounded-chip bg-forest px-[18px] py-2.5 font-mono text-xs tracking-wide text-paper"
+            className="rounded-chip bg-forest px-5 py-2.5 font-mono text-xs tracking-wide text-paper"
           >
             CART ({count})
           </Link>
@@ -60,6 +94,11 @@ export function SiteHeader() {
             {open ? "CLOSE" : "MENU"}
           </button>
         </div>
+      </Container>
+
+      {/* Full-width search on small screens (below the logo/actions row). */}
+      <Container className="pb-3 md:hidden">
+        <SearchBar />
       </Container>
 
       <Collapse open={open} id="mobile-nav">

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { SiteHeader } from "../../components/home/SiteHeader";
 import { SiteFooter } from "../../components/home/SiteFooter";
 import { Container } from "../../components/ui/Container";
@@ -16,37 +17,84 @@ import {
   orderStatusTone,
   type Order,
 } from "../../lib/api/orders";
+import { paymentApi, verifyWithRetry } from "../../lib/api/payment";
+import { loadRazorpay, openRazorpay } from "../../lib/razorpay";
 
 export default function OrderDetailPage() {
   const params = useParams<{ id: string }>();
   const search = useSearchParams();
   const justPlaced = search.get("placed") === "1";
   const { user, loading: authLoading, getToken } = useAuth();
+  const qc = useQueryClient();
+  const token = getToken();
 
-  const [order, setOrder] = useState<Order | null>(null);
-  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+  const orderKey = ["order", params.id, user?.id ?? null];
+  const {
+    data: order = null,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: orderKey,
+    queryFn: () => orderApi.get(token as string, params.id),
+    enabled: !!token,
+  });
+  const setOrder = (o: Order) => qc.setQueryData(orderKey, o);
 
-  useEffect(() => {
-    let active = true;
-    queueMicrotask(async () => {
-      const token = getToken();
-      if (!token) {
-        if (active) setState("error");
-        return;
-      }
-      try {
-        const o = await orderApi.get(token, params.id);
-        if (!active) return;
-        setOrder(o);
-        setState("ready");
-      } catch {
-        if (active) setState("error");
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, [params.id, user, getToken]);
+  const state: "loading" | "ready" | "error" =
+    authLoading || (!!token && isLoading)
+      ? "loading"
+      : isError || !order
+        ? "error"
+        : "ready";
+
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+
+  const payNow = async () => {
+    const token = getToken();
+    if (!token || !order) return;
+    setPaying(true);
+    setPayError(null);
+    try {
+      const init = await paymentApi.initiate(token, order.id);
+      const ready = await loadRazorpay();
+      if (!ready) throw new Error("Could not load the payment gateway.");
+      openRazorpay({
+        key: init.keyId,
+        amount: init.amountPaise,
+        currency: init.currency,
+        order_id: init.razorpayOrderId,
+        name: "Shuddha Bharat",
+        description: `Order ${init.orderNumber}`,
+        prefill: { name: user?.name ?? undefined, email: user?.email ?? undefined },
+        theme: { color: "#1f4d3a" },
+        handler: (resp) => {
+          void (async () => {
+            try {
+              // Idempotent retry — never re-initiate a captured payment.
+              const updated = await verifyWithRetry(token, {
+                orderId: order.id,
+                razorpayOrderId: resp.razorpay_order_id,
+                razorpayPaymentId: resp.razorpay_payment_id,
+                razorpaySignature: resp.razorpay_signature,
+              });
+              setOrder(updated);
+              setPaying(false);
+            } catch {
+              setPayError(
+                "We received your payment but couldn’t confirm it yet. Refresh in a moment — please don’t pay again.",
+              );
+              setPaying(false);
+            }
+          })();
+        },
+        modal: { ondismiss: () => setPaying(false) },
+      });
+    } catch (e) {
+      setPayError(e instanceof Error ? e.message : "Could not start payment");
+      setPaying(false);
+    }
+  };
 
   return (
     <>
@@ -69,7 +117,7 @@ export default function OrderDetailPage() {
             </div>
           ) : (
             <Reveal>
-              {justPlaced && (
+              {justPlaced && order.status !== "PENDING" && (
                 <div className="mb-6 rounded-card border border-forest bg-paper-dim p-5">
                   <p className="font-display text-xl font-semibold text-forest">
                     Thank you — your order is placed. ✓
@@ -77,6 +125,34 @@ export default function OrderDetailPage() {
                   <p className="mt-1 font-body text-sm text-gray">
                     A confirmation is on its way. You can track it here anytime.
                   </p>
+                </div>
+              )}
+
+              {order.status === "PENDING" && (
+                <div className="mb-6 rounded-card border border-gold bg-gold-dim/30 p-5">
+                  <p className="font-display text-xl font-semibold text-ink">
+                    Payment pending
+                  </p>
+                  <p className="mt-1 font-body text-sm text-gray">
+                    Your order is reserved but not yet paid. Complete the payment
+                    to confirm it.
+                  </p>
+                  {payError && (
+                    <p
+                      role="alert"
+                      className="mt-3 font-mono text-[11px] tracking-wide text-ink"
+                    >
+                      {payError}
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    onClick={payNow}
+                    disabled={paying}
+                    className="mt-4 rounded-chip bg-forest px-6 py-3 font-body text-sm font-semibold text-paper disabled:opacity-60"
+                  >
+                    {paying ? "Opening payment…" : `Pay ${formatINR(order.totalMinor)}`}
+                  </button>
                 </div>
               )}
 
@@ -130,7 +206,9 @@ export default function OrderDetailPage() {
                     <p className="mt-1 text-ink">
                       {order.paymentMethod === "COD"
                         ? "Cash on Delivery"
-                        : "Paid online (demo)"}
+                        : order.status === "PENDING"
+                          ? "Online · awaiting payment"
+                          : "Paid online (Razorpay)"}
                     </p>
                     <p className="mt-4 font-mono text-[11px] uppercase tracking-wider text-gold">
                       Ship to

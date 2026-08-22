@@ -56,6 +56,8 @@ export interface Order {
   status: string;
   subtotalMinor: number;
   shippingMinor: number;
+  discountMinor: number;
+  couponCode: string | null;
   totalMinor: number;
   paymentMethod: PaymentMethod;
   shipName: string;
@@ -134,10 +136,33 @@ export const addressApi = {
     request<{ id: string }>(`/addresses/${id}`, token, { method: "DELETE" }),
 };
 
+export interface CouponQuote {
+  couponId: string;
+  code: string;
+  discountType: "PERCENTAGE" | "FIXED";
+  discountValue: number;
+  discountAmountMinor: number;
+  finalTotalMinor: number;
+}
+
+export const couponApi = {
+  /** Validate a code against a cart total (paise) → discount quote, or throws. */
+  validate: (token: string, code: string, cartTotalMinor: number) =>
+    request<CouponQuote>("/coupons/validate", token, {
+      method: "POST",
+      body: JSON.stringify({ code, cartTotalMinor }),
+    }),
+};
+
 export const orderApi = {
   checkout: (
     token: string,
-    input: { addressId: string; paymentMethod: PaymentMethod; notes?: string },
+    input: {
+      addressId: string;
+      paymentMethod: PaymentMethod;
+      couponCode?: string;
+      notes?: string;
+    },
   ) =>
     request<Order>("/orders", token, {
       method: "POST",

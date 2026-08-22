@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Reveal } from "../motion/Reveal";
 import { StatusPill } from "../ui/StatusPill";
 import { useAuth } from "../../lib/auth/AuthProvider";
@@ -10,35 +10,24 @@ import {
   orderApi,
   orderStatusLabel,
   orderStatusTone,
-  type Order,
 } from "../../lib/api/orders";
 
 export function OrdersSection() {
   const { user, getToken } = useAuth();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+  const token = getToken();
 
-  useEffect(() => {
-    let active = true;
-    queueMicrotask(async () => {
-      const token = getToken();
-      if (!token) {
-        if (active) setState("error");
-        return;
-      }
-      try {
-        const list = await orderApi.mine(token);
-        if (!active) return;
-        setOrders(list);
-        setState("ready");
-      } catch {
-        if (active) setState("error");
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, [user, getToken]);
+  const {
+    data: orders = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["orders", user?.id ?? null],
+    queryFn: () => orderApi.mine(token as string),
+    enabled: !!token,
+  });
+
+  const state: "loading" | "ready" | "error" =
+    !!token && isLoading ? "loading" : isError ? "error" : "ready";
 
   return (
     <section>

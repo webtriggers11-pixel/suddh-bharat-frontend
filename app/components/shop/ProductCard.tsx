@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Tappable } from "../motion/Tappable";
+import { LikeButton } from "./LikeButton";
 import {
   discountPct,
   formatINR,
@@ -48,19 +49,23 @@ export function ProductCard({ product }: { product: Product }) {
             </div>
           )}
 
-          <div className="pointer-events-none absolute left-3 right-3 top-3 flex items-start justify-between">
-            {badge ? (
-              <span className="rounded-chip bg-forest px-2 py-1 font-mono text-[10px] tracking-wider text-paper">
-                {badge}
-              </span>
-            ) : (
-              <span />
-            )}
-            {off > 0 && (
-              <span className="rounded-chip bg-gold px-2 py-1 font-mono text-[10px] font-bold tracking-wider text-ink">
-                {off}% OFF
-              </span>
-            )}
+          <div className="absolute left-3 right-3 top-3 flex items-start justify-between">
+            <div className="pointer-events-none flex flex-col items-start gap-1.5">
+              {badge && (
+                <span className="rounded-chip bg-forest px-2 py-1 font-mono text-[10px] tracking-wider text-paper">
+                  {badge}
+                </span>
+              )}
+              {off > 0 && (
+                <span className="rounded-chip bg-gold px-2 py-1 font-mono text-[10px] font-bold tracking-wider text-ink">
+                  {off}% OFF
+                </span>
+              )}
+            </div>
+            <LikeButton
+              productId={product.id}
+              redirectTo={`/product/${product.slug}`}
+            />
           </div>
 
           {soldOut && (

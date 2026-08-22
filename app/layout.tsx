@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter, IBM_Plex_Mono } from "next/font/google";
 import { site } from "./lib/site";
+import { QueryProvider } from "./lib/query/QueryProvider";
 import { AuthProvider } from "./lib/auth/AuthProvider";
-import { CartProvider } from "./lib/cart/CartProvider";
+import { GuestMerge } from "./lib/guest/GuestMerge";
 import "./globals.css";
 
 // Brand fonts (business/design-system.md): Fraunces display, Inter body, IBM Plex Mono.
@@ -34,9 +35,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${fraunces.variable} ${inter.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-paper text-ink">
-        <AuthProvider>
-          <CartProvider>{children}</CartProvider>
-        </AuthProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <GuestMerge />
+            {children}
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

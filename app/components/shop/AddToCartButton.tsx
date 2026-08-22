@@ -1,29 +1,34 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useAuth } from "../../lib/auth/AuthProvider";
 import { useCart } from "../../lib/cart/CartProvider";
 import { Tappable } from "../motion/Tappable";
 
 /**
- * Quantity stepper + add-to-cart. Signed-out shoppers are routed to /login
- * (with a redirect back). Shows a brief "Added" confirmation via Motion.
+ * Quantity stepper + add-to-cart. Works for guests too — a signed-out shopper's
+ * cart is held in localStorage (merged on login), so no login wall. Shows a
+ * brief "Added" confirmation via Motion.
  */
 export function AddToCartButton({
   productId,
+  name,
   slug,
+  image,
+  priceMinor,
+  mrpMinor,
   inStock,
   maxQty,
 }: {
   productId: string;
+  name: string;
   slug: string;
+  image: string | null;
+  priceMinor: number;
+  mrpMinor: number;
   inStock: boolean;
   maxQty: number;
 }) {
-  const { user } = useAuth();
   const { add } = useCart();
-  const router = useRouter();
 
   const [qty, setQty] = useState(1);
   const [busy, setBusy] = useState(false);
@@ -39,14 +44,20 @@ export function AddToCartButton({
   }
 
   const onAdd = async () => {
-    if (!user) {
-      router.push(`/login?redirect=/product/${slug}`);
-      return;
-    }
     setBusy(true);
     setError(null);
     try {
-      await add(productId, qty);
+      // Snapshot lets the guest cart render offline; ignored when signed in.
+      await add(productId, qty, {
+        productId,
+        name,
+        slug,
+        image,
+        priceMinor,
+        mrpMinor,
+        stock: maxQty,
+        isActive: true,
+      });
       setAdded(true);
       setTimeout(() => setAdded(false), 2000);
     } catch (e) {

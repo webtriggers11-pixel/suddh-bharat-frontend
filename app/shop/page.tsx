@@ -5,9 +5,8 @@ import { SiteFooter } from "../components/home/SiteFooter";
 import { PageHero } from "../components/ui/PageHero";
 import { PWABadge } from "../components/pwa/PWABadge";
 import { Container } from "../components/ui/Container";
-import { Reveal } from "../components/motion/Reveal";
-import { ProductCard } from "../components/shop/ProductCard";
 import { ShopFilters } from "../components/shop/ShopFilters";
+import { InfiniteProductGrid } from "../components/shop/InfiniteProductGrid";
 import { catalogApi } from "../lib/api/catalog";
 
 export const metadata: Metadata = {
@@ -29,15 +28,17 @@ export default async function ShopPage({
 }) {
   const sp = await searchParams;
   const category = first(sp.category);
+  const search = first(sp.search)?.trim() || undefined;
   const sortParam = first(sp.sort);
   const sort =
     sortParam === "price_asc" || sortParam === "price_desc"
       ? sortParam
       : undefined;
 
+  const pageSize = 24;
   const [categories, page] = await Promise.all([
     catalogApi.categories(),
-    catalogApi.products({ categorySlug: category, sort, pageSize: 24 }),
+    catalogApi.products({ categorySlug: category, search, sort, pageSize }),
   ]);
 
   return (
@@ -60,6 +61,14 @@ export default async function ShopPage({
             />
 
             <div className="lg:order-2">
+              {search && (
+                <p className="mb-4 font-body text-sm text-gray">
+                  Results for{" "}
+                  <span className="font-semibold text-ink">“{search}”</span>
+                  {" · "}
+                  {page.total} {page.total === 1 ? "match" : "matches"}
+                </p>
+              )}
               <p className="mb-5 font-mono text-[11px] uppercase tracking-wider text-gray lg:hidden">
                 {page.total} {page.total === 1 ? "product" : "products"}
               </p>
@@ -67,13 +76,14 @@ export default async function ShopPage({
               {page.items.length === 0 ? (
                 <div className="mx-auto max-w-md rounded-card border border-line bg-paper-dim px-6 py-20 text-center">
                   <p className="font-mono text-[11px] uppercase tracking-wider text-gold">
-                    Empty shelf
+                    {search ? "No matches" : "Empty shelf"}
                   </p>
                   <p className="mt-4 font-display text-2xl font-semibold text-ink">
-                    Nothing here yet.
+                    {search ? `Nothing matched “${search}”.` : "Nothing here yet."}
                   </p>
                   <p className="mt-2 font-body text-gray">
-                    Try a different category, or check back soon.
+                    Try a different {search ? "search" : "category"}, or check back
+                    soon.
                   </p>
                   <Link
                     href="/shop"
@@ -83,18 +93,12 @@ export default async function ShopPage({
                   </Link>
                 </div>
               ) : (
-                <ul className="grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
-                  {page.items.map((product, i) => (
-                    <Reveal
-                      as="li"
-                      key={product.id}
-                      delay={Math.min(i * 0.04, 0.32)}
-                      className="h-full"
-                    >
-                      <ProductCard product={product} />
-                    </Reveal>
-                  ))}
-                </ul>
+                <InfiniteProductGrid
+                  key={`${category ?? ""}|${sort ?? ""}|${search ?? ""}`}
+                  initialItems={page.items}
+                  total={page.total}
+                  filters={{ categorySlug: category, search, sort, pageSize }}
+                />
               )}
             </div>
           </div>

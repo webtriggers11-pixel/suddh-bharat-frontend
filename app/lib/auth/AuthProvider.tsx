@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { authApi, type AuthResult, type AuthUser } from "../api/auth";
+import { setUnauthorizedHandler } from "./session";
 
 // NOTE: tokens are kept in localStorage for now. Production should move refresh
 // tokens to httpOnly secure cookies (ADR-0008 revisit trigger).
@@ -113,6 +114,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [clear]);
 
   const getToken = useCallback(() => readTokens().access, []);
+
+  // Forced logout: any authenticated call that 401s (expired/revoked token)
+  // clears the session and hard-navigates to the public home page. A full
+  // reload also discards all in-memory state and cached data so the next
+  // visitor on this browser starts clean (T15).
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      clear();
+      if (typeof window !== "undefined" && window.location.pathname !== "/") {
+        // Deliberate HARD navigation, not router.push: a forced logout must
+        // purge the previous user's in-memory state (React Query cache,
+        // provider state) so the next visitor on this browser starts clean.
+        // Client-side routing would keep that memory around.
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- see above
+        window.location.assign("/");
+      }
+    });
+    return () => setUnauthorizedHandler(null);
+  }, [clear]);
 
   return (
     <AuthContext.Provider

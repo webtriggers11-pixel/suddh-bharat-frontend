@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { SiteHeader } from "../components/home/SiteHeader";
 import { SiteFooter } from "../components/home/SiteFooter";
 import { Container } from "../components/ui/Container";
@@ -13,37 +13,24 @@ import {
   orderApi,
   orderStatusLabel,
   orderStatusTone,
-  type Order,
 } from "../lib/api/orders";
 
 export default function OrdersPage() {
   const { user, loading: authLoading, getToken } = useAuth();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [state, setState] = useState<"loading" | "ready" | "signedout">(
-    "loading",
-  );
+  const token = getToken();
 
-  useEffect(() => {
-    let active = true;
-    queueMicrotask(async () => {
-      const token = getToken();
-      if (!token) {
-        if (active) setState("signedout");
-        return;
-      }
-      try {
-        const list = await orderApi.mine(token);
-        if (!active) return;
-        setOrders(list);
-        setState("ready");
-      } catch {
-        if (active) setState("ready");
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, [user, getToken]);
+  const { data: orders = [], isLoading } = useQuery({
+    queryKey: ["orders", user?.id ?? null],
+    queryFn: () => orderApi.mine(token as string),
+    enabled: !!token,
+  });
+
+  const state: "loading" | "ready" | "signedout" =
+    authLoading || (!!token && isLoading)
+      ? "loading"
+      : !token
+        ? "signedout"
+        : "ready";
 
   return (
     <>

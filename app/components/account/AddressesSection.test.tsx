@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AddressesSection } from "./AddressesSection";
+import { TestQueryProvider } from "../../lib/query/TestQueryProvider";
 import { addressApi, type Address } from "../../lib/api/orders";
 
 vi.mock("../../lib/auth/AuthProvider", () => ({
@@ -11,10 +12,18 @@ vi.mock("../../lib/auth/AuthProvider", () => ({
 vi.mock("../../lib/api/orders", () => ({
   addressApi: {
     list: vi.fn(),
+    create: vi.fn(),
     setDefault: vi.fn(),
     remove: vi.fn(),
   },
 }));
+
+const renderSection = () =>
+  render(
+    <TestQueryProvider>
+      <AddressesSection />
+    </TestQueryProvider>,
+  );
 
 const address = (over: Partial<Address> = {}): Address => ({
   id: "a1",
@@ -40,7 +49,7 @@ describe("AddressesSection", () => {
 
   it("renders the user's addresses", async () => {
     mocked.list.mockResolvedValue([address()]);
-    render(<AddressesSection />);
+    renderSection();
     expect(await screen.findByText("Test User")).toBeInTheDocument();
     expect(screen.getByText(/12 MG Road/)).toBeInTheDocument();
   });
@@ -48,7 +57,7 @@ describe("AddressesSection", () => {
   it("sets an address as default and refetches", async () => {
     mocked.list.mockResolvedValue([address()]);
     mocked.setDefault.mockResolvedValue(address({ isDefault: true }));
-    render(<AddressesSection />);
+    renderSection();
     const btn = await screen.findByRole("button", { name: /set default/i });
     await userEvent.click(btn);
     await waitFor(() =>
@@ -60,7 +69,7 @@ describe("AddressesSection", () => {
 
   it("disables Delete for a locked address", async () => {
     mocked.list.mockResolvedValue([address({ isLocked: true, isDefault: true })]);
-    render(<AddressesSection />);
+    renderSection();
     const del = await screen.findByRole("button", { name: /delete/i });
     expect(del).toBeDisabled();
   });

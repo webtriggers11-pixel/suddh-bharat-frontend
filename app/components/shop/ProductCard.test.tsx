@@ -1,7 +1,23 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { ProductCard } from "./ProductCard";
+import { AuthProvider } from "../../lib/auth/AuthProvider";
+import { TestQueryProvider } from "../../lib/query/TestQueryProvider";
 import type { Product } from "../../lib/api/catalog";
+
+// LikeButton (embedded) calls useRouter — stub it for the app-router context.
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+
+/** ProductCard embeds a LikeButton → needs the Query client + Auth context. */
+function renderCard(product: Product) {
+  return render(
+    <TestQueryProvider>
+      <AuthProvider>
+        <ProductCard product={product} />
+      </AuthProvider>
+    </TestQueryProvider>,
+  );
+}
 
 function makeProduct(over: Partial<Product> = {}): Product {
   return {
@@ -31,7 +47,7 @@ function makeProduct(over: Partial<Product> = {}): Product {
 
 describe("ProductCard", () => {
   it("renders name, price and links to the product", () => {
-    render(<ProductCard product={makeProduct()} />);
+    renderCard(makeProduct());
     expect(screen.getByText("Stone-Ground Atta")).toBeInTheDocument();
     expect(screen.getByText("₹349")).toBeInTheDocument();
     expect(screen.getByRole("link")).toHaveAttribute(
@@ -41,18 +57,18 @@ describe("ProductCard", () => {
   });
 
   it("shows a discount badge and struck-through MRP when discounted", () => {
-    render(<ProductCard product={makeProduct()} />);
+    renderCard(makeProduct());
     expect(screen.getByText("17% OFF")).toBeInTheDocument();
     expect(screen.getByText("₹420")).toBeInTheDocument();
   });
 
   it("marks out-of-stock products", () => {
-    render(<ProductCard product={makeProduct({ stock: 0 })} />);
+    renderCard(makeProduct({ stock: 0 }));
     expect(screen.getByText("OUT OF STOCK")).toBeInTheDocument();
   });
 
   it("shows a NEW badge for new arrivals", () => {
-    render(<ProductCard product={makeProduct({ isNew: true })} />);
+    renderCard(makeProduct({ isNew: true }));
     expect(screen.getByText("NEW")).toBeInTheDocument();
   });
 });
