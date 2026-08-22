@@ -293,9 +293,9 @@ export default function CheckoutPage() {
                             name="address"
                             checked={selectedId === a.id}
                             onChange={() => setSelectedId(a.id)}
-                            className="mt-1 accent-[color:var(--color-forest)]"
+                            className="mt-1 shrink-0 accent-[color:var(--color-forest)]"
                           />
-                          <span className="font-body text-sm text-ink">
+                          <span className="min-w-0 break-words font-body text-sm text-ink">
                             <strong>{a.fullName}</strong> · {a.phone}
                             <br />
                             {a.line1}
@@ -318,7 +318,7 @@ export default function CheckoutPage() {
                   )}
 
                   {showForm && (
-                    <div className="mt-4 grid grid-cols-2 gap-3 rounded-card border border-line p-4">
+                    <div className="mt-4 grid grid-cols-1 gap-3 rounded-card border border-line p-4 sm:grid-cols-2">
                       <Input placeholder="Full name" value={form.fullName} onChange={set("fullName")} span2 />
                       <Input placeholder="Phone" value={form.phone} onChange={set("phone")} />
                       <Input placeholder="Pincode" value={form.pincode} onChange={set("pincode")} />
@@ -375,9 +375,9 @@ export default function CheckoutPage() {
                           name="method"
                           checked={method === m.key}
                           onChange={() => setMethod(m.key)}
-                          className="accent-[color:var(--color-forest)]"
+                          className="shrink-0 accent-[color:var(--color-forest)]"
                         />
-                        <span className="font-body text-sm text-ink">{m.label}</span>
+                        <span className="min-w-0 break-words font-body text-sm text-ink">{m.label}</span>
                       </label>
                     ))}
                   </div>
@@ -393,12 +393,12 @@ export default function CheckoutPage() {
                   {cart.items.map((i) => (
                     <li
                       key={i.id}
-                      className="flex justify-between font-body text-sm text-gray"
+                      className="flex justify-between gap-3 font-body text-sm text-gray"
                     >
-                      <span>
+                      <span className="min-w-0 break-words">
                         {i.name} × {i.quantity}
                       </span>
-                      <span className="text-ink">{formatINR(i.lineTotalMinor)}</span>
+                      <span className="shrink-0 text-ink">{formatINR(i.lineTotalMinor)}</span>
                     </li>
                   ))}
                 </ul>
