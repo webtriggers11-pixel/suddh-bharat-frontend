@@ -36,16 +36,19 @@ export function SiteHeader() {
       // The safe-area padding below clears the notch/status bar when installed
       // as a standalone PWA (app/layout.tsx sets viewportFit: "cover" so the
       // safe-area-inset-top environment variable isn't always zero).
-      className="sticky top-0 z-50 border-b border-line bg-paper/90 pt-[env(safe-area-inset-top)] backdrop-blur"
+      className="sticky top-0 z-50 border-b border-line bg-paper/90 pt-safe-top backdrop-blur"
     >
       {/* Row 1 — utility: logo, search, account/wishlist/cart. */}
       <Container className="flex h-16 items-center gap-3 md:h-[76px] md:gap-5">
+        {/* sm:hidden, not lg:hidden — from sm up, everything the drawer could
+            hold (Sign in, Wishlist) is already reachable directly in this row,
+            so a burger with an empty drawer behind it would be dead weight. */}
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-controls="mobile-nav"
-          className="shrink-0 rounded-chip border border-ink px-3 py-2 font-mono text-[13px] lg:hidden"
+          className="shrink-0 rounded-chip border border-ink px-3 py-2 font-mono text-[13px] sm:hidden"
         >
           {open ? "CLOSE" : "MENU"}
         </button>
@@ -79,20 +82,21 @@ export function SiteHeader() {
             <HeartIcon size={22} strokeWidth={1.7} />
             <CountBadge count={wishlistCount} />
           </Link>
-          {/* Icon-only below lg to keep the utility row compact on phones/tablets. */}
+          {/* One link, not two: icon-only below lg (compact on phones/tablets),
+              icon+label from lg (primary CTA chip) — avoids two anchors to the
+              same destination with mismatched accessible names. */}
           <Link
             href="/cart"
             aria-label={`Cart (${count})`}
-            className="relative text-ink hover:text-forest lg:hidden"
+            className="relative flex items-center gap-2 text-ink hover:text-forest lg:rounded-chip lg:bg-forest lg:px-5 lg:py-2.5 lg:text-paper lg:hover:text-paper"
           >
-            <CartIcon size={23} strokeWidth={1.7} />
-            <CountBadge count={count} />
-          </Link>
-          <Link
-            href="/cart"
-            className="hidden rounded-chip bg-forest px-5 py-2.5 font-mono text-xs tracking-wide text-paper lg:inline-block"
-          >
-            CART ({count})
+            <span className="relative lg:hidden">
+              <CartIcon size={23} strokeWidth={1.7} />
+              <CountBadge count={count} />
+            </span>
+            <span className="hidden font-mono text-xs tracking-wide lg:inline" aria-hidden="true">
+              CART ({count})
+            </span>
           </Link>
         </div>
       </Container>
@@ -120,8 +124,10 @@ export function SiteHeader() {
       </div>
 
       <Collapse open={open} id="mobile-nav">
-        <nav aria-label="Mobile" className="border-t border-line bg-paper lg:hidden">
+        <nav aria-label="Mobile" className="border-t border-line bg-paper sm:hidden">
           <Container as="ul" className="flex flex-col">
+            {/* The parent <nav> is sm:hidden, so these rows only ever render
+                below sm — no per-row breakpoint class needed on top of that. */}
             <li>
               <Link
                 href={authHref}
@@ -131,7 +137,7 @@ export function SiteHeader() {
                 {authLabel}
               </Link>
             </li>
-            <li className="border-t border-line sm:hidden">
+            <li className="border-t border-line">
               <Link
                 href="/wishlist"
                 onClick={() => setOpen(false)}

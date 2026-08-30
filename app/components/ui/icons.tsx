@@ -30,7 +30,15 @@ export function HeartIcon({
   );
 }
 
-export function CartIcon({ size = 22, strokeWidth = 1.7 }: { size?: number; strokeWidth?: number }) {
+export function CartIcon({
+  size = 22,
+  strokeWidth = 1.7,
+  className,
+}: {
+  size?: number;
+  strokeWidth?: number;
+  className?: string;
+}) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -42,6 +50,7 @@ export function CartIcon({ size = 22, strokeWidth = 1.7 }: { size?: number; stro
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
+      className={className}
     >
       <circle cx="9" cy="20" r="1.4" />
       <circle cx="18" cy="20" r="1.4" />
@@ -50,7 +59,15 @@ export function CartIcon({ size = 22, strokeWidth = 1.7 }: { size?: number; stro
   );
 }
 
-export function SearchIcon({ size = 18, strokeWidth = 2 }: { size?: number; strokeWidth?: number }) {
+export function SearchIcon({
+  size = 18,
+  strokeWidth = 2,
+  className,
+}: {
+  size?: number;
+  strokeWidth?: number;
+  className?: string;
+}) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -62,6 +79,7 @@ export function SearchIcon({ size = 18, strokeWidth = 2 }: { size?: number; stro
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
+      className={className}
     >
       <circle cx="11" cy="11" r="7" />
       <path d="m21 21-4.3-4.3" />
@@ -69,7 +87,15 @@ export function SearchIcon({ size = 18, strokeWidth = 2 }: { size?: number; stro
   );
 }
 
-export function ArrowLeftIcon({ size = 22, strokeWidth = 1.8 }: { size?: number; strokeWidth?: number }) {
+export function ArrowLeftIcon({
+  size = 22,
+  strokeWidth = 1.8,
+  className,
+}: {
+  size?: number;
+  strokeWidth?: number;
+  className?: string;
+}) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -81,6 +107,7 @@ export function ArrowLeftIcon({ size = 22, strokeWidth = 1.8 }: { size?: number;
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
+      className={className}
     >
       <path d="M19 12H5M12 19l-7-7 7-7" />
     </svg>

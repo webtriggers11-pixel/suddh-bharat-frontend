@@ -44,7 +44,10 @@ export function PWABadge() {
     <div
       role="status"
       aria-live="polite"
-      className="fixed bottom-4 right-4 left-4 z-20 mx-auto flex max-w-sm flex-col gap-3 rounded-card border border-line bg-paper p-4 text-left shadow-card sm:left-auto"
+      // bottom offset adds the home-indicator/gesture-bar inset on top of the
+      // usual 1rem gap (standalone PWA display, and iOS Safari even in-browser)
+      // instead of the badge sitting flush against — or under — that area.
+      className="fixed right-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 z-20 mx-auto flex max-w-sm flex-col gap-3 rounded-card border border-line bg-paper p-4 text-left shadow-card sm:left-auto"
     >
       <span className="font-body text-base text-ink">
         Install Shuddha on your device.
