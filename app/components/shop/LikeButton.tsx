@@ -4,25 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useWishlist } from "../../lib/wishlist/WishlistProvider";
 import { Tappable } from "../motion/Tappable";
-
-/** Filled heart when liked, outline when not. Inherits `currentColor`. */
-function Heart({ filled }: { filled: boolean }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width="20"
-      height="20"
-      fill={filled ? "currentColor" : "none"}
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />
-    </svg>
-  );
-}
+import { HeartIcon } from "../ui/icons";
 
 /**
  * Like ("wishlist") toggle. `variant="icon"` is the compact heart used as a
@@ -88,7 +70,7 @@ export function LikeButton({
             }`}
           >
             <span className={liked ? "text-gold" : ""}>
-              <Heart filled={liked} />
+              <HeartIcon filled={liked} />
             </span>
             {liked ? "Saved" : "Save"}
           </button>
@@ -115,7 +97,7 @@ export function LikeButton({
             : `border-line hover:border-gold ${liked ? "text-gold" : "text-ink/70 hover:text-forest"}`
         }`}
       >
-        <Heart filled={liked} />
+        <HeartIcon filled={liked} />
       </button>
       {/* Screen-reader announcement for the icon variant (no room for inline text). */}
       <span role="status" aria-live="polite" className="sr-only">

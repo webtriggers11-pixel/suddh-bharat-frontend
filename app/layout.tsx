@@ -26,6 +26,9 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#1b3a2f", // --forest
+  // Lets the header read env(safe-area-inset-*) in standalone PWA display
+  // (notch/status-bar area) instead of it always resolving to 0.
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -8,6 +8,7 @@ import {
   formatINR,
   type SuggestResult,
 } from "../../lib/api/catalog";
+import { SearchIcon } from "../ui/icons";
 
 const EMPTY: SuggestResult = { products: [], suggestions: [] };
 
@@ -17,7 +18,13 @@ const EMPTY: SuggestResult = { products: [], suggestions: [] };
  * the debounced term, so identical terms are cached/deduped automatically. Enter
  * or the search button routes to /shop?search=.
  */
-export function SearchBar({ className = "" }: { className?: string }) {
+export function SearchBar({
+  className = "",
+  autoFocus = false,
+}: {
+  className?: string;
+  autoFocus?: boolean;
+}) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
@@ -133,6 +140,7 @@ export function SearchBar({ className = "" }: { className?: string }) {
           onKeyDown={onKeyDown}
           placeholder="Search clean products…"
           aria-label="Search products"
+          autoFocus={autoFocus}
           className="min-w-0 flex-1 bg-transparent px-4 py-2.5 font-body text-sm text-ink placeholder:text-gray focus:outline-none"
         />
         <button
@@ -140,20 +148,7 @@ export function SearchBar({ className = "" }: { className?: string }) {
           aria-label="Search"
           className="grid place-items-center bg-forest px-4 text-paper transition-colors hover:bg-forest-light"
         >
-          <svg
-            viewBox="0 0 24 24"
-            width="18"
-            height="18"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="7" />
-            <path d="m21 21-4.3-4.3" />
-          </svg>
+          <SearchIcon />
         </button>
       </form>
 
