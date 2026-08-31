@@ -19,8 +19,9 @@
   --font-body: var(--font-inter), system-ui, sans-serif;
   --font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
 
-  --radius-chip: 2px;
-  --radius-card: 4px;
+  --radius-chip: 8px;
+  --radius-card: 14px;
+  --radius-lg: 20px;
 
   /* Elevation token (Tailwind `shadow-card`), mirrors design-system.md --shadow. */
   --shadow-card:

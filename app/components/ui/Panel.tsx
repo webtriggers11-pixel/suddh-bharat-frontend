@@ -1,7 +1,7 @@
 import type { ElementType, ReactNode } from "react";
 
 /**
- * The repeated card surface (white, thin line border, 4px radius). `active`
+ * The repeated card surface (white, thin line border, card radius). `active`
  * swaps the border to forest. Design-system tokens only. Server Component.
  */
 export function Panel({

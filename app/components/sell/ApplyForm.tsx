@@ -6,7 +6,7 @@ import { SELL_CATEGORIES } from "./content";
 const labelCls =
   "mb-2 block font-mono text-xs uppercase tracking-wide text-gray";
 const fieldCls =
-  "w-full rounded-[3px] border border-line bg-paper px-3.5 py-3 font-body text-[14.5px] text-ink";
+  "w-full rounded-chip border border-line bg-paper px-3.5 py-3 font-body text-[14.5px] text-ink";
 
 /** Vendor application form. Client-side validation + confirmation for now. */
 export function ApplyForm() {
@@ -41,7 +41,7 @@ export function ApplyForm() {
     <form
       onSubmit={onSubmit}
       noValidate
-      className="mx-auto max-w-[640px] rounded-md border border-line bg-white p-11"
+      className="mx-auto max-w-[640px] rounded-card border border-line bg-white p-11"
     >
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
@@ -96,7 +96,7 @@ export function ApplyForm() {
       </div>
       <button
         type="submit"
-        className="mt-6 w-full rounded-[3px] bg-forest px-7 py-4 font-body text-sm font-bold text-paper"
+        className="mt-6 w-full rounded-chip bg-forest px-7 py-4 font-body text-sm font-bold text-paper"
       >
         Submit application
       </button>

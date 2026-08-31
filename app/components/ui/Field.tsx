@@ -19,7 +19,7 @@ export function Field({
         id={id}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `${id}-error` : undefined}
-        className="w-full rounded-[3px] border border-line bg-paper px-3.5 py-3 font-body text-[14.5px] text-ink"
+        className="w-full rounded-chip border border-line bg-paper px-3.5 py-3 font-body text-[14.5px] text-ink"
         {...props}
       />
       {error && (

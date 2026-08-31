@@ -10,7 +10,7 @@ import {
 
 /**
  * Storefront product tile. Design-system tokens only (paper/line/forest/gold,
- * 4px card radius, Fraunces title). Subtle hover-lift via the shared Tappable
+ * card radius, Fraunces title). Subtle hover-lift via the shared Tappable
  * primitive plus a calm image zoom + elevation on hover (CSS transitions, which
  * the global reduced-motion rule already disables). Money is formatted from
  * integer paise at the edge.
