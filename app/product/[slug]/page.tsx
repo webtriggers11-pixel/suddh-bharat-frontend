@@ -10,6 +10,7 @@ import { ProductGallery } from "../../components/shop/ProductGallery";
 import { AddToCartButton } from "../../components/shop/AddToCartButton";
 import { LikeButton } from "../../components/shop/LikeButton";
 import { ProductReviews } from "../../components/shop/ProductReviews";
+import { RelatedProducts } from "../../components/shop/RelatedProducts";
 import { catalogApi, discountPct, formatINR } from "../../lib/api/catalog";
 
 export async function generateMetadata({
@@ -172,6 +173,8 @@ export default async function ProductPage({
 
           <ProductReviews productId={product.id} slug={product.slug} />
         </Container>
+
+        <RelatedProducts slug={product.slug} />
       </main>
       <SiteFooter />
       <PWABadge />

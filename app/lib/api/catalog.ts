@@ -192,6 +192,25 @@ export interface SuggestResult {
   suggestions: string[];
 }
 
+/**
+ * Browser-side fetch for the product page's "You may also like" rail
+ * (FEAT-017). Same-category, active, in-stock, ranked server-side — this is a
+ * plain read with no query params. Degrades to `[]` on error/not-found so the
+ * section simply doesn't render rather than breaking the page.
+ */
+export async function getRelatedProducts(slug: string): Promise<Product[]> {
+  try {
+    const res = await fetch(
+      `${API_URL}/products/${encodeURIComponent(slug)}/related`,
+    );
+    if (!res.ok) return [];
+    const data = (await res.json()) as unknown;
+    return Array.isArray(data) ? (data as Product[]) : [];
+  } catch {
+    return [];
+  }
+}
+
 /** Autocomplete for the search bar (backend `suggest=true`). */
 export async function fetchSuggestions(search: string): Promise<SuggestResult> {
   const empty: SuggestResult = { products: [], suggestions: [] };
