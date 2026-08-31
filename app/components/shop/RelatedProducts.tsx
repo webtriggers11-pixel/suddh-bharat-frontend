@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ProductCard } from "./ProductCard";
 import { Container } from "../ui/Container";
 import { SectionHeading } from "../ui/SectionHeading";
+import { PRODUCT_GRID_CLASS, SkeletonCardGrid } from "../ui/Skeleton";
 import { getRelatedProducts } from "../../lib/api/catalog";
 
 /**
@@ -13,19 +14,17 @@ import { getRelatedProducts } from "../../lib/api/catalog";
  * (TanStack Query) since the parent page is a Server Component and this is
  * non-critical, below-the-fold content.
  *
- * Renders nothing at all — no heading, no empty box — while loading and when
- * the list is empty: a product with no category (or no other matches) never
- * shows a dead section, and we can't tell the two apart until the query
- * settles, so staying invisible until data actually arrives is correct here
- * rather than a loading skeleton that would flash before an empty result.
+ * Shows a card-grid skeleton while the query is in flight (CHORE-020); once it
+ * settles, renders nothing at all — no heading, no empty box — if the result
+ * is genuinely empty (no category, or no other matches).
  */
 export function RelatedProducts({ slug }: { slug: string }) {
-  const { data: related = [] } = useQuery({
+  const { data: related = [], isLoading } = useQuery({
     queryKey: ["related-products", slug],
     queryFn: () => getRelatedProducts(slug),
   });
 
-  if (related.length === 0) return null;
+  if (!isLoading && related.length === 0) return null;
 
   return (
     <Container
@@ -36,13 +35,17 @@ export function RelatedProducts({ slug }: { slug: string }) {
       <SectionHeading eyebrow="You may also like" id="related-products-heading">
         More to explore
       </SectionHeading>
-      <ul className="mt-8 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
-        {related.map((product) => (
-          <li key={product.id} className="h-full">
-            <ProductCard product={product} />
-          </li>
-        ))}
-      </ul>
+      {isLoading ? (
+        <SkeletonCardGrid count={4} className="mt-8" />
+      ) : (
+        <ul className={`mt-8 ${PRODUCT_GRID_CLASS}`}>
+          {related.map((product) => (
+            <li key={product.id} className="h-full">
+              <ProductCard product={product} />
+            </li>
+          ))}
+        </ul>
+      )}
     </Container>
   );
 }

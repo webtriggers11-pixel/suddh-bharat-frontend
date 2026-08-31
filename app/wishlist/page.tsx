@@ -7,6 +7,7 @@ import { SiteFooter } from "../components/home/SiteFooter";
 import { Container } from "../components/ui/Container";
 import { Reveal } from "../components/motion/Reveal";
 import { ProductCard } from "../components/shop/ProductCard";
+import { PRODUCT_GRID_CLASS, SkeletonCardGrid } from "../components/ui/Skeleton";
 import { useAuth } from "../lib/auth/AuthProvider";
 import { useWishlist } from "../lib/wishlist/WishlistProvider";
 import { wishlistApi, type WishlistItem } from "../lib/api/wishlist";
@@ -80,7 +81,7 @@ export default function WishlistPage() {
               cta={{ href: "/login?redirect=/wishlist", label: "Sign in" }}
             />
           ) : state === "loading" ? (
-            <p className="mt-6 font-body text-sm text-gray">Loading…</p>
+            <SkeletonCardGrid count={8} className="mt-8" />
           ) : state === "error" ? (
             <Prompt
               title="Could not load your wishlist"
@@ -98,7 +99,7 @@ export default function WishlistPage() {
                 {visible.length} saved{" "}
                 {visible.length === 1 ? "product" : "products"}
               </p>
-              <ul className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+              <ul className={`mt-8 ${PRODUCT_GRID_CLASS}`}>
                 {visible.map((it) => (
                   <li key={it.id} className="h-full">
                     <ProductCard product={toProduct(it.product)} />

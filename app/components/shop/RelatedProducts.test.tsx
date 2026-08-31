@@ -65,9 +65,26 @@ describe("RelatedProducts", () => {
       await screen.findByRole("heading", { name: "More to explore" }),
     ).toBeInTheDocument();
     expect(screen.getByText("You may also like")).toBeInTheDocument();
-    expect(screen.getByText("Stone-Ground Atta")).toBeInTheDocument();
+    expect(await screen.findByText("Stone-Ground Atta")).toBeInTheDocument();
     expect(screen.getByText("Cold-Pressed Oil")).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /./ }).length).toBeGreaterThan(0);
+  });
+
+  it("shows a card-grid skeleton while the request is in flight", async () => {
+    let resolve!: (v: Product[]) => void;
+    getRelatedProducts.mockReturnValueOnce(
+      new Promise<Product[]>((r) => {
+        resolve = r;
+      }),
+    );
+    const { container } = renderRelated();
+
+    expect(
+      await screen.findByRole("heading", { name: "More to explore" }),
+    ).toBeInTheDocument();
+    expect(container.querySelectorAll(".animate-pulse").length).toBeGreaterThan(0);
+
+    resolve([]);
   });
 
   it("renders nothing at all when the API returns an empty list", async () => {

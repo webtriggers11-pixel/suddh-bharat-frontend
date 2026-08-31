@@ -9,8 +9,12 @@ import {
   type SuggestResult,
 } from "../../lib/api/catalog";
 import { SearchIcon } from "../ui/icons";
+import { SkeletonListRows } from "../ui/Skeleton";
 
 const EMPTY: SuggestResult = { products: [], suggestions: [] };
+
+const DROPDOWN_CLASS =
+  "absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-card border border-line bg-white py-1 shadow-card";
 
 /**
  * Storefront search with live autocomplete (Amazon-style, on Shuddha tokens).
@@ -38,7 +42,7 @@ export function SearchBar({
     return () => clearTimeout(t);
   }, [q]);
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["suggest", debounced],
     queryFn: () => fetchSuggestions(debounced),
     enabled: debounced.length >= 2,
@@ -92,6 +96,8 @@ export function SearchBar({
   };
 
   const hasSuggestions = open && options.length > 0;
+  const showLoading =
+    open && !hasSuggestions && debounced.length >= 2 && isLoading;
   const optId = (i: number) => `${listId}-opt-${i}`;
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -152,12 +158,18 @@ export function SearchBar({
         </button>
       </form>
 
+      {showLoading && (
+        <div className={DROPDOWN_CLASS}>
+          <SkeletonListRows count={3} variant="search" />
+        </div>
+      )}
+
       {hasSuggestions && (
         <div
           id={listId}
           role="listbox"
           aria-label="Search suggestions"
-          className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-card border border-line bg-white py-1 shadow-card"
+          className={DROPDOWN_CLASS}
         >
           {options.map((opt, i) => {
             const isActive = i === active;

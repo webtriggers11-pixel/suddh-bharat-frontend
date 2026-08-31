@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Reveal } from "../motion/Reveal";
 import { StatusPill } from "../ui/StatusPill";
+import { SkeletonListRows } from "../ui/Skeleton";
 import { useAuth } from "../../lib/auth/AuthProvider";
 import { formatINR } from "../../lib/api/catalog";
 import {
@@ -46,7 +47,7 @@ export function OrdersSection() {
       </div>
 
       {state === "loading" ? (
-        <p className="mt-4 font-body text-sm text-gray">Loading…</p>
+        <SkeletonListRows count={3} variant="order-compact" className="mt-4" />
       ) : state === "error" ? (
         <p role="alert" className="mt-4 font-mono text-xs text-gold">
           Couldn’t load your orders. Please try again.

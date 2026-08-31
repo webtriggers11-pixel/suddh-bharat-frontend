@@ -7,6 +7,7 @@ import { SiteFooter } from "../components/home/SiteFooter";
 import { Container } from "../components/ui/Container";
 import { Reveal } from "../components/motion/Reveal";
 import { StatusPill } from "../components/ui/StatusPill";
+import { SkeletonListRows } from "../components/ui/Skeleton";
 import { useAuth } from "../lib/auth/AuthProvider";
 import { formatINR } from "../lib/api/catalog";
 import {
@@ -54,7 +55,7 @@ export default function OrdersPage() {
               </Link>
             </div>
           ) : state === "loading" ? (
-            <p className="mt-6 font-body text-gray">Loading…</p>
+            <SkeletonListRows count={4} variant="order" className="mt-8" />
           ) : orders.length === 0 ? (
             <div className="py-16 text-center">
               <p className="font-display text-2xl font-semibold text-ink">

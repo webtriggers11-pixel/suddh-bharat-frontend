@@ -21,6 +21,10 @@ import {
 import { useAddresses } from "../lib/addresses/useAddresses";
 import { paymentApi, verifyWithRetry } from "../lib/api/payment";
 import { loadRazorpay, openRazorpay } from "../lib/razorpay";
+import {
+  SkeletonBlock,
+  SkeletonListRows,
+} from "../components/ui/Skeleton";
 
 const FREE_SHIPPING_MINOR = 49900;
 const FLAT_SHIPPING_MINOR = 4900;
@@ -260,7 +264,10 @@ export default function CheckoutPage() {
               Completing your order…
             </p>
           ) : authLoading || cartLoading ? (
-            <p className="py-20 text-center font-body text-gray">Loading…</p>
+            <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_340px]">
+              <SkeletonListRows count={2} variant="address" />
+              <SkeletonBlock className="h-64 w-full rounded-card" />
+            </div>
           ) : cart.items.length === 0 ? (
             <Prompt
               title="Your cart is empty"
@@ -276,7 +283,7 @@ export default function CheckoutPage() {
                   </h2>
 
                   {loadingAddr ? (
-                    <p className="mt-3 font-body text-sm text-gray">Loading…</p>
+                    <SkeletonListRows count={2} variant="address" className="mt-3" />
                   ) : (
                     <div className="mt-4 flex flex-col gap-3">
                       {addresses.map((a) => (

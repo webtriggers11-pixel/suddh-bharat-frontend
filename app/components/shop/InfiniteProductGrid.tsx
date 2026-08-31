@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { ProductCard } from "./ProductCard";
+import { PRODUCT_GRID_CLASS, SkeletonCardGrid } from "../ui/Skeleton";
 import {
   fetchProductsClient,
   type Paginated,
@@ -80,7 +81,7 @@ export function InfiniteProductGrid({
 
   return (
     <div>
-      <ul className="grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
+      <ul className={PRODUCT_GRID_CLASS}>
         {items.map((product) => (
           <li key={product.id} className="h-full">
             <ProductCard product={product} />
@@ -89,10 +90,8 @@ export function InfiniteProductGrid({
       </ul>
 
       {hasNextPage ? (
-        <div ref={sentinelRef} className="flex justify-center py-10">
-          <span className="font-mono text-[11px] uppercase tracking-wider text-gray">
-            {isFetchingNextPage ? "Loading more…" : ""}
-          </span>
+        <div ref={sentinelRef} className="py-10">
+          {isFetchingNextPage && <SkeletonCardGrid count={4} />}
         </div>
       ) : (
         items.length > 0 && (

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../lib/auth/AuthProvider";
 import { reviewApi, type Review } from "../../lib/api/reviews";
+import { SkeletonListRows } from "../ui/Skeleton";
 
 function Stars({ value }: { value: number }) {
   return (
@@ -64,7 +65,7 @@ export function ProductReviews({
       <h2 className="font-display text-2xl font-semibold text-ink">Reviews</h2>
 
       {isLoading ? (
-        <p className="mt-4 font-body text-sm text-gray">Loading reviews…</p>
+        <SkeletonListRows count={3} variant="review" className="mt-4" />
       ) : reviews.length === 0 ? (
         <p className="mt-4 font-body text-sm text-gray">
           No reviews yet — be the first to share your experience.

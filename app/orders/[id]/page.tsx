@@ -9,6 +9,11 @@ import { SiteFooter } from "../../components/home/SiteFooter";
 import { Container } from "../../components/ui/Container";
 import { Reveal } from "../../components/motion/Reveal";
 import { StatusPill } from "../../components/ui/StatusPill";
+import {
+  SkeletonBlock,
+  SkeletonLines,
+  SkeletonListRows,
+} from "../../components/ui/Skeleton";
 import { useAuth } from "../../lib/auth/AuthProvider";
 import { formatINR } from "../../lib/api/catalog";
 import {
@@ -102,11 +107,17 @@ export default function OrderDetailPage() {
       <main className="min-h-[60vh]">
         <Container className="py-12">
           {state === "loading" ? (
-            <p className="font-body text-gray">Loading your order…</p>
+            <div>
+              <SkeletonLines widths={["h-3 w-32", "h-8 w-64"]} />
+              <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_320px]">
+                <SkeletonListRows count={3} variant="order-compact" />
+                <SkeletonBlock className="h-52 w-full rounded-card" />
+              </div>
+            </div>
           ) : state === "error" || !order ? (
             <div className="py-16 text-center">
               <p className="font-display text-2xl font-semibold text-ink">
-                {authLoading ? "Loading…" : "Order not found"}
+                Order not found
               </p>
               <Link
                 href="/orders"

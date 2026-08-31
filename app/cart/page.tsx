@@ -10,6 +10,7 @@ import { Reveal } from "../components/motion/Reveal";
 import { useAuth } from "../lib/auth/AuthProvider";
 import { useCart } from "../lib/cart/CartProvider";
 import { formatINR } from "../lib/api/catalog";
+import { SkeletonListRows } from "../components/ui/Skeleton";
 
 export default function CartPage() {
   const { loading: authLoading } = useAuth();
@@ -48,9 +49,7 @@ export default function CartPage() {
           )}
 
           {authLoading || loading ? (
-            <p className="py-16 text-center font-body text-gray">
-              Loading your cart…
-            </p>
+            <SkeletonListRows count={3} variant="cart-line" className="mt-6" />
           ) : cart.items.length === 0 ? (
             <EmptyState
               title="Your cart is empty"

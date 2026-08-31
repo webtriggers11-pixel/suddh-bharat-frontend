@@ -7,6 +7,7 @@ import { Reveal } from "../motion/Reveal";
 import { Collapse } from "../motion/Collapse";
 import { Tappable } from "../motion/Tappable";
 import { AddressForm } from "./AddressForm";
+import { SkeletonBlock } from "../ui/Skeleton";
 import { useAddresses } from "../../lib/addresses/useAddresses";
 
 export function AddressesSection() {
@@ -70,7 +71,11 @@ export function AddressesSection() {
       )}
 
       {state === "loading" ? (
-        <p className="mt-4 font-body text-sm text-gray">Loading…</p>
+        <div aria-hidden="true" className="mt-4 grid gap-4 sm:grid-cols-2">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <SkeletonBlock key={i} className="h-32 w-full rounded-card" />
+          ))}
+        </div>
       ) : addresses.length === 0 && !showForm ? (
         <Panel className="mt-4 text-center">
           <p className="font-body text-sm text-gray">No saved addresses yet.</p>
