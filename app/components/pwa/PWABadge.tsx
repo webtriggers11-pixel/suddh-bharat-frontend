@@ -64,7 +64,7 @@ export function PWABadge() {
           type="button"
           onClick={() => setInstallEvent(null)}
           aria-label="Dismiss"
-          className="rounded-chip border-2 border-transparent bg-paper-dim px-3 py-1.5 font-body text-sm text-ink hover:shadow-card"
+          className="rounded-chip border-2 border-transparent bg-paper-dim px-3 py-1.5 font-body text-sm text-ink hover:shadow-sm"
         >
           Dismiss
         </button>
