@@ -16,20 +16,34 @@ import { DURATION, EASE } from "../motion/tokens";
  * anchor the group's bounding box to a true circle centered on (150,150), so
  * `transform-box: fill-box` spins it dead-center with no wobble (rotating a
  * perfect circle is visually invisible).
+ *
+ * `size="sm"` (CHORE-019) — the same SVG at a compact inline size for reuse
+ * near decision moments (product page, checkout), not just the homepage
+ * hero. Always static at that size, independent of the visitor's actual
+ * motion preference: the ring-text is illegible that small anyway, and a
+ * spinning seal next to a buy button would be noise, not the "calm, never
+ * flashy" motion this design system asks for. `noMotion` below folds in both
+ * reasons (user preference OR compact size) — named generically on purpose,
+ * so a future `sm` addition that DOES want some motion isn't tempted to gate
+ * it on a variable whose name implies it only ever means "user preference".
  */
 
 // One slow revolution — ambient, not an "enter", so it lives outside the tokens.
 const RING_SECONDS = 44;
 
-export function VerificationStamp() {
-  const reduce = useReducedMotion();
+export function VerificationStamp({
+  size = "lg",
+}: {
+  size?: "lg" | "sm";
+}) {
+  const noMotion = useReducedMotion() || size === "sm";
 
   return (
     <motion.div
-      className="w-[min(320px,80%)]"
-      animate={reduce ? undefined : { y: [0, -8, 0] }}
+      className={size === "sm" ? "w-12" : "w-[min(320px,80%)]"}
+      animate={noMotion ? undefined : { y: [0, -8, 0] }}
       transition={
-        reduce
+        noMotion
           ? undefined
           : { duration: 6, ease: "easeInOut", repeat: Infinity }
       }
@@ -39,10 +53,10 @@ export function VerificationStamp() {
         role="img"
         aria-label="Shuddha verified seal — checked and clean"
         className="w-full"
-        initial={reduce ? false : { opacity: 0, scale: 0.92 }}
+        initial={noMotion ? false : { opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: DURATION.slow, ease: EASE }}
-        whileHover={reduce ? undefined : { scale: 1.03 }}
+        whileHover={noMotion ? undefined : { scale: 1.03 }}
       >
       <defs>
         <path
@@ -53,9 +67,9 @@ export function VerificationStamp() {
 
       <motion.g
         style={{ transformBox: "fill-box", transformOrigin: "center" }}
-        animate={reduce ? undefined : { rotate: 360 }}
+        animate={noMotion ? undefined : { rotate: 360 }}
         transition={
-          reduce
+          noMotion
             ? undefined
             : { duration: RING_SECONDS, ease: "linear", repeat: Infinity }
         }

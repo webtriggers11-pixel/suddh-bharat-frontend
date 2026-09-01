@@ -12,6 +12,7 @@ import { LikeButton } from "../../components/shop/LikeButton";
 import { ProductReviews } from "../../components/shop/ProductReviews";
 import { RelatedProducts } from "../../components/shop/RelatedProducts";
 import { StickyAddToCartBar } from "../../components/shop/StickyAddToCartBar";
+import { VerificationStamp } from "../../components/home/VerificationStamp";
 import { catalogApi, discountPct, formatINR } from "../../lib/api/catalog";
 import { FREE_SHIPPING_MINOR } from "../../lib/site";
 
@@ -127,10 +128,10 @@ export default async function ProductPage({
               )}
             </dl>
 
-            <p className="mt-8 flex items-center gap-2 font-mono text-[11px] uppercase tracking-wide text-forest">
-              <span aria-hidden>✓</span>
+            <div className="mt-8 flex items-center gap-2 font-mono text-[11px] uppercase tracking-wide text-forest">
+              <VerificationStamp size="sm" />
               Verified · Free shipping over {formatINR(FREE_SHIPPING_MINOR)}
-            </p>
+            </div>
 
             <div className="mt-3 flex flex-wrap items-start gap-3">
               <AddToCartButton

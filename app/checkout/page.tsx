@@ -29,6 +29,7 @@ import {
   SkeletonListRows,
 } from "../components/ui/Skeleton";
 import { FREE_SHIPPING_MINOR, FLAT_SHIPPING_MINOR } from "../lib/site";
+import { VerificationStamp } from "../components/home/VerificationStamp";
 
 const EMPTY_FORM: AddressInput = {
   fullName: "",
@@ -512,7 +513,12 @@ export default function CheckoutPage() {
                   </p>
                 )}
 
-                <Tappable lift={0} className="mt-6 block">
+                <div className="mt-4 flex items-center gap-2 font-mono text-[11px] uppercase tracking-wide text-forest">
+                  <VerificationStamp size="sm" />
+                  Verified · Secure payment via Razorpay
+                </div>
+
+                <Tappable lift={0} className="mt-3 block">
                   <button
                     type="button"
                     onClick={placeOrder}
