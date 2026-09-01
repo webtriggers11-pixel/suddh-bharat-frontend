@@ -8,6 +8,7 @@ import { SiteHeader } from "../components/home/SiteHeader";
 import { SiteFooter } from "../components/home/SiteFooter";
 import { Container } from "../components/ui/Container";
 import { Tappable } from "../components/motion/Tappable";
+import { PriceChange } from "../components/motion/PriceChange";
 import { useAuth } from "../lib/auth/AuthProvider";
 import { useCart } from "../lib/cart/CartProvider";
 import { formatINR } from "../lib/api/catalog";
@@ -500,7 +501,9 @@ export default function CheckoutPage() {
                   )}
                   <div className="mt-2 flex justify-between border-t border-line pt-3 font-semibold text-ink">
                     <dt>Total</dt>
-                    <dd>{formatINR(grandTotal)}</dd>
+                    <dd>
+                      <PriceChange value={formatINR(grandTotal)} />
+                    </dd>
                   </div>
                 </dl>
 

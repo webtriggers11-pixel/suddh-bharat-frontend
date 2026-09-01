@@ -7,6 +7,7 @@ import { SiteHeader } from "../components/home/SiteHeader";
 import { SiteFooter } from "../components/home/SiteFooter";
 import { Container } from "../components/ui/Container";
 import { Reveal } from "../components/motion/Reveal";
+import { PriceChange } from "../components/motion/PriceChange";
 import { useAuth } from "../lib/auth/AuthProvider";
 import { useCart } from "../lib/cart/CartProvider";
 import { formatINR } from "../lib/api/catalog";
@@ -85,7 +86,7 @@ export default function CartPage() {
                           {line.name}
                         </Link>
                         <span className="font-body font-semibold text-forest">
-                          {formatINR(line.lineTotalMinor)}
+                          <PriceChange value={formatINR(line.lineTotalMinor)} />
                         </span>
                       </div>
                       <p className="mt-1 font-body text-sm text-gray">
@@ -155,7 +156,7 @@ export default function CartPage() {
                 <dl className="mt-4 flex justify-between font-body text-sm">
                   <dt className="text-gray">Subtotal</dt>
                   <dd className="font-semibold text-ink">
-                    {formatINR(cart.totalMinor)}
+                    <PriceChange value={formatINR(cart.totalMinor)} />
                   </dd>
                 </dl>
                 <p className="mt-2 font-body text-xs text-gray">

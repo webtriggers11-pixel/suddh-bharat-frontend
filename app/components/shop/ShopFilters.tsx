@@ -32,7 +32,7 @@ function Tick({ active }: { active: boolean }) {
   return (
     <span
       aria-hidden
-      className={`h-3.5 w-0.5 shrink-0 rounded-full ${active ? "bg-gold" : "bg-transparent"}`}
+      className={`h-3.5 w-0.5 shrink-0 rounded-full transition-colors duration-200 ${active ? "bg-gold" : "bg-transparent"}`}
     />
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useCart } from "../../lib/cart/CartProvider";
 import { Tappable } from "../motion/Tappable";
+import { Collapse } from "../motion/Collapse";
 
 /**
  * Quantity stepper + add-to-cart. Works for guests too — a signed-out shopper's
@@ -109,14 +110,14 @@ export function AddToCartButton({
         </Tappable>
       </div>
 
-      {added && (
+      <Collapse open={added}>
         <p role="status" className="font-mono text-[11px] tracking-wide text-forest">
           Added to your cart.{" "}
           <a href="/cart" className="underline">
             View cart
           </a>
         </p>
-      )}
+      </Collapse>
       {error && (
         <p role="alert" className="font-mono text-[11px] tracking-wide text-gold">
           {error}
