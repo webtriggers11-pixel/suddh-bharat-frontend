@@ -1,16 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { NAV } from "../../lib/site";
 import { useAuth } from "../../lib/auth/AuthProvider";
 import { useCart } from "../../lib/cart/CartProvider";
 import { useWishlist } from "../../lib/wishlist/WishlistProvider";
 import { SearchBar } from "../shop/SearchBar";
 import { Container } from "../ui/Container";
-import { Collapse } from "../motion/Collapse";
+import { DURATION, EASE } from "../motion/tokens";
 import { CartIcon, CountBadge, HeartIcon, SearchIcon } from "../ui/icons";
+
+// Sidebar's secondary-links section reuses NAV's own `muted` items (Our
+// Standard, Sell on Shuddha, Journal) — one source of truth shared with Row
+// 2's category strip, not a second hardcoded label/href list.
+const SIDEBAR_LINKS = NAV.filter((item) => item.muted);
 
 /**
  * Two-tier header (nykaa.com-style structure, Shuddha tokens/fonts): a utility
@@ -23,6 +29,7 @@ export function SiteHeader() {
   const { user } = useAuth();
   const { count } = useCart();
   const { count: wishlistCount } = useWishlist();
+  const reduce = useReducedMotion();
 
   const pathname = usePathname();
   // Signed-out → carry the current page so login returns here (not always /account).
@@ -30,6 +37,23 @@ export function SiteHeader() {
     ? "/account"
     : `/login?redirect=${encodeURIComponent(pathname || "/")}`;
   const authLabel = user ? (user.name ?? "Account") : "Sign in";
+
+  // Escape-to-close + background scroll lock while the sidebar is open —
+  // standard off-canvas-overlay behavior, not present on the old dropdown
+  // (which didn't cover/obscure the rest of the page, so didn't need it).
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [open]);
 
   return (
     <header
@@ -50,7 +74,12 @@ export function SiteHeader() {
           aria-controls="mobile-nav"
           className="shrink-0 rounded-chip border border-ink px-3 py-2 font-mono text-[13px] sm:hidden"
         >
-          {open ? "CLOSE" : "MENU"}
+          {/* Static label, not open/close-toggled text: once the sidebar is
+              open its backdrop visually covers this button anyway (CHORE-026)
+              — the sidebar's own "Close" button, backdrop click, and Escape
+              are the actual ways to close it. aria-expanded still reflects
+              state for assistive tech. */}
+          MENU
         </button>
 
         <Link
@@ -126,32 +155,72 @@ export function SiteHeader() {
         </Container>
       </div>
 
-      <Collapse open={open} id="mobile-nav">
-        <nav aria-label="Mobile" className="border-t border-line bg-paper sm:hidden">
-          <Container as="ul" className="flex flex-col">
-            {/* The parent <nav> is sm:hidden, so these rows only ever render
-                below sm — no per-row breakpoint class needed on top of that. */}
-            <li>
-              <Link
-                href={authHref}
-                onClick={() => setOpen(false)}
-                className="block py-3 font-body text-base font-semibold text-forest"
-              >
-                {authLabel}
-              </Link>
-            </li>
-            <li className="border-t border-line">
-              <Link
-                href="/wishlist"
-                onClick={() => setOpen(false)}
-                className="block py-3 font-body text-base text-ink"
-              >
-                Wishlist{wishlistCount > 0 ? ` (${wishlistCount})` : ""}
-              </Link>
-            </li>
-          </Container>
-        </nav>
-      </Collapse>
+      {/* Mobile menu: a left-side slide-in sidebar (CHORE-026), not the old
+          downward dropdown — categories/Our Standard/Sell already have a
+          persistent presence in Row 2 above, so this only needs to hold what
+          isn't reachable elsewhere on mobile: account, Journal (currently has
+          no nav entry anywhere except the footer), and — for discoverability,
+          since Row 2's strip is easy to miss — Our Standard/Sell again. No
+          Wishlist link: BottomTabBar (CHORE-025) already owns it on mobile. */}
+      <AnimatePresence>
+        {open && (
+          <>
+            <motion.div
+              aria-hidden="true"
+              className="fixed inset-0 z-[60] bg-ink/40 sm:hidden"
+              initial={reduce ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={reduce ? undefined : { opacity: 0 }}
+              transition={{ duration: DURATION.fast }}
+              onClick={() => setOpen(false)}
+            />
+            <motion.nav
+              id="mobile-nav"
+              aria-label="Mobile"
+              className="fixed inset-y-0 left-0 z-[60] w-[82%] max-w-xs overflow-y-auto border-r border-line bg-paper pt-safe-top sm:hidden"
+              initial={reduce ? false : { x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={reduce ? undefined : { x: "-100%" }}
+              transition={{ duration: DURATION.base, ease: EASE }}
+            >
+              <div className="flex items-center justify-between border-b border-line px-5 py-4">
+                <span className="font-display text-lg font-semibold tracking-tight">
+                  SHUDDHA<span className="text-gold">.</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="rounded-chip border border-ink px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider"
+                >
+                  Close
+                </button>
+              </div>
+              <ul className="flex flex-col px-5">
+                <li>
+                  <Link
+                    href={authHref}
+                    onClick={() => setOpen(false)}
+                    className="block border-b border-line py-4 font-body text-base font-semibold text-forest"
+                  >
+                    {authLabel}
+                  </Link>
+                </li>
+                {SIDEBAR_LINKS.map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className="block border-b border-line py-4 font-body text-base text-ink"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </motion.nav>
+          </>
+        )}
+      </AnimatePresence>
     </header>
   );
 }

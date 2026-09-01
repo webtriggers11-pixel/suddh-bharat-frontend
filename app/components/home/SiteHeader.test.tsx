@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { SiteHeader } from "./SiteHeader";
@@ -39,20 +39,53 @@ describe("SiteHeader", () => {
     wishlistCount = 0;
   });
 
-  it("toggles the mobile menu open and closed", async () => {
+  it("toggles the mobile sidebar open and closed via the header button", async () => {
     renderHeader();
-    const openBtn = screen.getByRole("button", { name: /menu/i });
-    expect(openBtn).toHaveAttribute("aria-expanded", "false");
+    const menuBtn = screen.getByRole("button", { name: /menu/i });
+    expect(menuBtn).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("navigation", { name: /mobile/i })).not.toBeInTheDocument();
 
-    await userEvent.click(openBtn);
-    const closeBtn = screen.getByRole("button", { name: /close/i });
-    expect(closeBtn).toHaveAttribute("aria-expanded", "true");
+    await userEvent.click(menuBtn);
+    expect(menuBtn).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("navigation", { name: /mobile/i })).toBeInTheDocument();
 
-    await userEvent.click(closeBtn);
-    expect(screen.getByRole("button", { name: /menu/i })).toHaveAttribute(
-      "aria-expanded",
-      "false",
+    await userEvent.click(menuBtn);
+    expect(menuBtn).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("closes the sidebar via its own Close button and via the backdrop", async () => {
+    renderHeader();
+    await userEvent.click(screen.getByRole("button", { name: /menu/i }));
+    expect(screen.getByRole("navigation", { name: /mobile/i })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Close" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("navigation", { name: /mobile/i })).not.toBeInTheDocument(),
     );
+
+    await userEvent.click(screen.getByRole("button", { name: /menu/i }));
+    const backdrop = document.querySelector('[aria-hidden="true"].fixed.inset-0');
+    expect(backdrop).toBeTruthy();
+    await userEvent.click(backdrop as Element);
+    await waitFor(() =>
+      expect(screen.queryByRole("navigation", { name: /mobile/i })).not.toBeInTheDocument(),
+    );
+  });
+
+  it("closes the sidebar on Escape and locks/restores background scroll while open", async () => {
+    const originalOverflow = document.body.style.overflow;
+    renderHeader();
+    expect(document.body.style.overflow).toBe(originalOverflow);
+
+    await userEvent.click(screen.getByRole("button", { name: /menu/i }));
+    expect(screen.getByRole("navigation", { name: /mobile/i })).toBeInTheDocument();
+    expect(document.body.style.overflow).toBe("hidden");
+
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() =>
+      expect(screen.queryByRole("navigation", { name: /mobile/i })).not.toBeInTheDocument(),
+    );
+    expect(document.body.style.overflow).toBe(originalOverflow);
   });
 
   it("renders the category strip persistently, not behind the burger", () => {
@@ -75,11 +108,38 @@ describe("SiteHeader", () => {
     expect(screen.getByText("2")).toBeInTheDocument();
   });
 
-  it("exposes a wishlist link in the mobile drawer", async () => {
-    wishlistCount = 5;
+  it("sidebar holds account/Journal/Our-Standard/Sell-on-Shuddha, not Wishlist (BottomTabBar owns that on mobile)", async () => {
     renderHeader();
     await userEvent.click(screen.getByRole("button", { name: /menu/i }));
-    const drawer = screen.getByRole("navigation", { name: /mobile/i });
-    expect(within(drawer).getByRole("link", { name: /wishlist \(5\)/i })).toBeInTheDocument();
+    const sidebar = screen.getByRole("navigation", { name: /mobile/i });
+
+    expect(within(sidebar).getByRole("link", { name: "Sign in" })).toHaveAttribute(
+      "href",
+      "/login?redirect=%2Fshop",
+    );
+    expect(within(sidebar).getByRole("link", { name: "Journal" })).toHaveAttribute(
+      "href",
+      "/journal",
+    );
+    expect(within(sidebar).getByRole("link", { name: "Our Standard" })).toHaveAttribute(
+      "href",
+      "/our-standard",
+    );
+    expect(within(sidebar).getByRole("link", { name: "Sell on Shuddha" })).toHaveAttribute(
+      "href",
+      "/sell",
+    );
+    expect(within(sidebar).queryByRole("link", { name: /wishlist/i })).not.toBeInTheDocument();
+  });
+
+  it("closes the sidebar and navigates when a sidebar link is clicked", async () => {
+    renderHeader();
+    await userEvent.click(screen.getByRole("button", { name: /menu/i }));
+    const sidebar = screen.getByRole("navigation", { name: /mobile/i });
+
+    await userEvent.click(within(sidebar).getByRole("link", { name: "Journal" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("navigation", { name: /mobile/i })).not.toBeInTheDocument(),
+    );
   });
 });
