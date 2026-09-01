@@ -1,9 +1,34 @@
+import Link from "next/link";
 import { Container } from "../ui/Container";
 
-const COLUMNS: { heading: string; links: string[] }[] = [
-  { heading: "Shop", links: ["Food & Pantry", "Baby", "Beauty", "Clothing"] },
-  { heading: "Shuddha", links: ["Our Standard", "Sell on Shuddha", "FAQ", "Contact"] },
-  { heading: "Follow", links: ["Instagram", "Terms", "Privacy"] },
+const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] = [
+  {
+    heading: "Shop",
+    links: [
+      { label: "Food & Pantry", href: "#" },
+      { label: "Baby", href: "#" },
+      { label: "Beauty", href: "#" },
+      { label: "Clothing", href: "#" },
+    ],
+  },
+  {
+    heading: "Shuddha",
+    links: [
+      { label: "Our Standard", href: "/our-standard" },
+      { label: "Journal", href: "/journal" },
+      { label: "Sell on Shuddha", href: "/sell" },
+      { label: "FAQ", href: "#" },
+      { label: "Contact", href: "#" },
+    ],
+  },
+  {
+    heading: "Follow",
+    links: [
+      { label: "Instagram", href: "#" },
+      { label: "Terms", href: "#" },
+      { label: "Privacy", href: "#" },
+    ],
+  },
 ];
 
 export function SiteFooter() {
@@ -24,10 +49,13 @@ export function SiteFooter() {
             </h2>
             <ul className="mt-3.5 space-y-2.5">
               {col.links.map((link) => (
-                <li key={link}>
-                  <a href="#" className="font-body text-sm text-ink hover:text-forest">
-                    {link}
-                  </a>
+                <li key={link.label}>
+                  <Link
+                    href={link.href}
+                    className="font-body text-sm text-ink hover:text-forest"
+                  >
+                    {link.label}
+                  </Link>
                 </li>
               ))}
             </ul>
