@@ -11,6 +11,7 @@ import { AddToCartButton } from "../../components/shop/AddToCartButton";
 import { LikeButton } from "../../components/shop/LikeButton";
 import { ProductReviews } from "../../components/shop/ProductReviews";
 import { RelatedProducts } from "../../components/shop/RelatedProducts";
+import { StickyAddToCartBar } from "../../components/shop/StickyAddToCartBar";
 import { catalogApi, discountPct, formatINR } from "../../lib/api/catalog";
 import { FREE_SHIPPING_MINOR } from "../../lib/site";
 
@@ -148,6 +149,17 @@ export default async function ProductPage({
                 variant="full"
               />
             </div>
+
+            <StickyAddToCartBar
+              productId={product.id}
+              name={product.name}
+              slug={product.slug}
+              image={product.images[0] ?? null}
+              priceMinor={product.priceMinor}
+              mrpMinor={product.mrpMinor}
+              inStock={inStock}
+              maxQty={product.stock}
+            />
 
             <ul className="mt-8 flex flex-col gap-2.5 border-t border-line pt-6">
               {TRUST.map((claim) => (

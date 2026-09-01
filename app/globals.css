@@ -35,13 +35,22 @@
 
 :root {
   color-scheme: light;
+  /* Height the StickyAddToCartBar currently occupies (0 when hidden) — lets
+     other fixed bottom surfaces (PWABadge) shift up instead of overlapping
+     it. Set via JS (measured element height, not a magic number) in
+     StickyAddToCartBar. */
+  --sticky-atc-height: 0px;
 }
 
-/* Safe-area utility (PWA standalone display clears the notch/status bar area).
-   Centralized here so every sticky/fixed surface that needs top clearance uses
-   the same value instead of repeating env(safe-area-inset-top) inline. */
+/* Safe-area utilities (PWA standalone display clears the notch/status bar and
+   home-indicator areas). Centralized here so every sticky/fixed surface that
+   needs top/bottom clearance uses the same value instead of repeating
+   env(safe-area-inset-*) inline. */
 @utility pt-safe-top {
   padding-top: env(safe-area-inset-top);
+}
+@utility pb-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 body {
