@@ -28,9 +28,7 @@ import {
   SkeletonBlock,
   SkeletonListRows,
 } from "../components/ui/Skeleton";
-
-const FREE_SHIPPING_MINOR = 49900;
-const FLAT_SHIPPING_MINOR = 4900;
+import { FREE_SHIPPING_MINOR, FLAT_SHIPPING_MINOR } from "../lib/site";
 
 const EMPTY_FORM: AddressInput = {
   fullName: "",

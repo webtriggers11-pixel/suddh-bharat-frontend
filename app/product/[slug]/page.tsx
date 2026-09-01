@@ -12,6 +12,7 @@ import { LikeButton } from "../../components/shop/LikeButton";
 import { ProductReviews } from "../../components/shop/ProductReviews";
 import { RelatedProducts } from "../../components/shop/RelatedProducts";
 import { catalogApi, discountPct, formatINR } from "../../lib/api/catalog";
+import { FREE_SHIPPING_MINOR } from "../../lib/site";
 
 export async function generateMetadata({
   params,
@@ -125,7 +126,12 @@ export default async function ProductPage({
               )}
             </dl>
 
-            <div className="mt-8 flex flex-wrap items-start gap-3">
+            <p className="mt-8 flex items-center gap-2 font-mono text-[11px] uppercase tracking-wide text-forest">
+              <span aria-hidden>✓</span>
+              Verified · Free shipping over {formatINR(FREE_SHIPPING_MINOR)}
+            </p>
+
+            <div className="mt-3 flex flex-wrap items-start gap-3">
               <AddToCartButton
                 productId={product.id}
                 name={product.name}
