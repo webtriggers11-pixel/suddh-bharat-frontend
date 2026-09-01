@@ -34,7 +34,7 @@ export default function CartPage() {
     <>
       <SiteHeader />
       <main className="min-h-[60vh]">
-        <Container className="py-12">
+        <Container className="py-14 md:py-20">
           <h1 className="font-display text-[clamp(28px,3.4vw,40px)] font-semibold text-ink">
             Your cart
           </h1>

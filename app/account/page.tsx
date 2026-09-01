@@ -12,7 +12,7 @@ function LoadingShell() {
   return (
     <>
       <SiteHeader />
-      <Container className="py-10 md:py-14">
+      <Container className="py-14 md:py-20">
         <div className="grid gap-8 md:grid-cols-[220px_1fr] lg:grid-cols-[240px_1fr]">
           <SkeletonBlock className="h-48 w-full rounded-card" />
           <SkeletonLines

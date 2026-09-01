@@ -38,7 +38,7 @@ export function AccountShell() {
           title={user?.name ?? user?.email ?? "Your account"}
           intro="Manage your profile, orders and saved addresses."
         />
-        <Container className="py-10 md:py-14">
+        <Container className="py-14 md:py-20">
           <div className="grid gap-8 md:grid-cols-[220px_1fr] lg:grid-cols-[240px_1fr]">
             <SectionNav active={active} onSelect={select} onSignOut={signOut} />
             <div className="min-w-0">

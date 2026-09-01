@@ -50,7 +50,7 @@ export default async function ShopPage({
           title="The Shuddha catalog."
           intro="Every product here comes from a brand checked against our published standard — clean by default, verified by category."
         />
-        <Container className="py-10">
+        <Container className="py-14 md:py-20">
           <div className="grid gap-6 lg:grid-cols-[240px_1fr] lg:gap-12">
             <ShopFilters
               categories={categories}

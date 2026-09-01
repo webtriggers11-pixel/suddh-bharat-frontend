@@ -105,7 +105,7 @@ export default function OrderDetailPage() {
     <>
       <SiteHeader />
       <main className="min-h-[60vh]">
-        <Container className="py-12">
+        <Container className="py-14 md:py-20">
           {state === "loading" ? (
             <div>
               <SkeletonLines widths={["h-3 w-32", "h-8 w-64"]} />
