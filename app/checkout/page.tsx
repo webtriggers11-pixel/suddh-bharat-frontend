@@ -12,6 +12,7 @@ import { useAuth } from "../lib/auth/AuthProvider";
 import { useCart } from "../lib/cart/CartProvider";
 import { formatINR } from "../lib/api/catalog";
 import {
+  addressApi,
   couponApi,
   orderApi,
   type AddressInput,
@@ -21,6 +22,8 @@ import {
 import { useAddresses } from "../lib/addresses/useAddresses";
 import { paymentApi, verifyWithRetry } from "../lib/api/payment";
 import { loadRazorpay, openRazorpay } from "../lib/razorpay";
+import { authApi, ApiError } from "../lib/api/auth";
+import { mergeGuestData } from "../lib/guest/mergeGuestData";
 import {
   SkeletonBlock,
   SkeletonListRows,
@@ -40,7 +43,7 @@ const EMPTY_FORM: AddressInput = {
 };
 
 export default function CheckoutPage() {
-  const { user, loading: authLoading, getToken } = useAuth();
+  const { user, loading: authLoading, getToken, applyResult } = useAuth();
   const { cart, loading: cartLoading, refresh } = useCart();
   const router = useRouter();
   const qc = useQueryClient();
@@ -118,6 +121,26 @@ export default function CheckoutPage() {
     setBusy(true);
     setError(null);
     try {
+      // Guest checkout (ADR-0012, FEAT-019): no token yet → create a
+      // brand-new, zero-verification account for this phone, merge the
+      // guest cart into it, then create the address under it. A phone that
+      // already has an account is rejected (409) — never signed into
+      // without verification; the shopper is pointed at "Sign in instead".
+      if (!getToken()) {
+        const result = await authApi.guest(form.phone);
+        applyResult(result);
+        await mergeGuestData(result.accessToken);
+        await qc.invalidateQueries({ queryKey: ["cart"] });
+        const created = await addressApi.create(result.accessToken, {
+          ...form,
+          isDefault: true,
+        });
+        setSelectedId(created.id);
+        setShowForm(false);
+        setForm(EMPTY_FORM);
+        return;
+      }
+
       const created = await createAddress({
         ...form,
         isDefault: addresses.length === 0,
@@ -126,7 +149,13 @@ export default function CheckoutPage() {
       setShowForm(false);
       setForm(EMPTY_FORM);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not save address");
+      if (e instanceof ApiError && e.status === 409) {
+        setError(
+          "This phone number already has an account. Please sign in instead.",
+        );
+      } else {
+        setError(e instanceof Error ? e.message : "Could not save address");
+      }
     } finally {
       setBusy(false);
     }
@@ -254,12 +283,7 @@ export default function CheckoutPage() {
             Checkout
           </h1>
 
-          {!user && !authLoading ? (
-            <Prompt
-              title="Sign in to check out"
-              cta={{ href: "/login?redirect=/checkout", label: "Sign in" }}
-            />
-          ) : completing ? (
+          {completing ? (
             <p className="py-20 text-center font-body text-gray">
               Completing your order…
             </p>
@@ -278,9 +302,19 @@ export default function CheckoutPage() {
               <div className="flex flex-col gap-8">
                 {/* Address */}
                 <section>
-                  <h2 className="font-display text-xl font-semibold text-ink">
-                    Delivery address
-                  </h2>
+                  <div className="flex items-center justify-between gap-3">
+                    <h2 className="font-display text-xl font-semibold text-ink">
+                      Delivery address
+                    </h2>
+                    {!user && !authLoading && (
+                      <Link
+                        href="/login?redirect=/checkout"
+                        className="font-mono text-[11px] uppercase tracking-wider text-gray hover:text-forest"
+                      >
+                        Sign in instead
+                      </Link>
+                    )}
+                  </div>
 
                   {loadingAddr ? (
                     <SkeletonListRows count={2} variant="address" className="mt-3" />

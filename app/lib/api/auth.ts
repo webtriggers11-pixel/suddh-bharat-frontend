@@ -64,6 +64,9 @@ export const authApi = {
     request<{ phone: string; devCode?: string }>('/auth/otp/request', json({ phone })),
   verifyOtp: (phone: string, code: string) =>
     request<AuthResult>('/auth/otp/verify', json({ phone, code })),
+  // Zero-verification guest checkout (ADR-0012, FEAT-019). Backend rejects
+  // (409) an already-registered phone — never logs into an existing account.
+  guest: (phone: string) => request<AuthResult>('/auth/guest', json({ phone })),
   refresh: (refreshToken: string) =>
     request<AuthResult>('/auth/refresh', json({ refreshToken })),
   logout: (refreshToken: string) =>
