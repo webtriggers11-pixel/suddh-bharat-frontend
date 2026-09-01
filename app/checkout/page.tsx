@@ -358,13 +358,13 @@ export default function CheckoutPage() {
 
                   {showForm && (
                     <div className="mt-4 grid grid-cols-1 gap-3 rounded-card border border-line p-4 sm:grid-cols-2">
-                      <Input placeholder="Full name" value={form.fullName} onChange={set("fullName")} span2 />
-                      <Input placeholder="Phone" value={form.phone} onChange={set("phone")} />
-                      <Input placeholder="Pincode" value={form.pincode} onChange={set("pincode")} />
-                      <Input placeholder="Address line 1" value={form.line1} onChange={set("line1")} span2 />
-                      <Input placeholder="Address line 2 (optional)" value={form.line2 ?? ""} onChange={set("line2")} span2 />
-                      <Input placeholder="City" value={form.city} onChange={set("city")} />
-                      <Input placeholder="State" value={form.state} onChange={set("state")} />
+                      <Input placeholder="Full name" value={form.fullName} onChange={set("fullName")} autoComplete="name" span2 />
+                      <Input placeholder="Phone" value={form.phone} onChange={set("phone")} autoComplete="tel" />
+                      <Input placeholder="Pincode" value={form.pincode} onChange={set("pincode")} autoComplete="postal-code" />
+                      <Input placeholder="Address line 1" value={form.line1} onChange={set("line1")} autoComplete="address-line1" span2 />
+                      <Input placeholder="Address line 2 (optional)" value={form.line2 ?? ""} onChange={set("line2")} autoComplete="address-line2" span2 />
+                      <Input placeholder="City" value={form.city} onChange={set("city")} autoComplete="address-level2" />
+                      <Input placeholder="State" value={form.state} onChange={set("state")} autoComplete="address-level1" />
                       <div className="col-span-2 flex gap-3">
                         <button
                           type="button"

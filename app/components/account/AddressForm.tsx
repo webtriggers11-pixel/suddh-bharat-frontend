@@ -61,18 +61,60 @@ export function AddressForm({
     <div className="mt-4 rounded-card border border-line bg-paper-dim p-5">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <Field label="Full name" id="addr-name" value={form.fullName} onChange={set("fullName")} />
+          <Field
+            label="Full name"
+            id="addr-name"
+            value={form.fullName}
+            onChange={set("fullName")}
+            autoComplete="name"
+          />
         </div>
-        <Field label="Phone" id="addr-phone" value={form.phone} onChange={set("phone")} />
-        <Field label="Pincode" id="addr-pin" value={form.pincode} onChange={set("pincode")} />
+        <Field
+          label="Phone"
+          id="addr-phone"
+          value={form.phone}
+          onChange={set("phone")}
+          autoComplete="tel"
+        />
+        <Field
+          label="Pincode"
+          id="addr-pin"
+          value={form.pincode}
+          onChange={set("pincode")}
+          autoComplete="postal-code"
+        />
         <div className="sm:col-span-2">
-          <Field label="Address line 1" id="addr-l1" value={form.line1} onChange={set("line1")} />
+          <Field
+            label="Address line 1"
+            id="addr-l1"
+            value={form.line1}
+            onChange={set("line1")}
+            autoComplete="address-line1"
+          />
         </div>
         <div className="sm:col-span-2">
-          <Field label="Address line 2 (optional)" id="addr-l2" value={form.line2 ?? ""} onChange={set("line2")} />
+          <Field
+            label="Address line 2 (optional)"
+            id="addr-l2"
+            value={form.line2 ?? ""}
+            onChange={set("line2")}
+            autoComplete="address-line2"
+          />
         </div>
-        <Field label="City" id="addr-city" value={form.city} onChange={set("city")} />
-        <Field label="State" id="addr-state" value={form.state} onChange={set("state")} />
+        <Field
+          label="City"
+          id="addr-city"
+          value={form.city}
+          onChange={set("city")}
+          autoComplete="address-level2"
+        />
+        <Field
+          label="State"
+          id="addr-state"
+          value={form.state}
+          onChange={set("state")}
+          autoComplete="address-level1"
+        />
       </div>
 
       {error && (
