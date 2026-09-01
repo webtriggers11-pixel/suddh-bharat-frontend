@@ -114,6 +114,91 @@ export function ArrowLeftIcon({
   );
 }
 
+export function HomeIcon({
+  size = 22,
+  strokeWidth = 1.7,
+  className,
+}: {
+  size?: number;
+  strokeWidth?: number;
+  className?: string;
+}) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M3.5 10.5 12 3.5l8.5 7" />
+      <path d="M5.5 9v10.5a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1V15a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4.5a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1V9" />
+    </svg>
+  );
+}
+
+export function ShopIcon({
+  size = 22,
+  strokeWidth = 1.7,
+  className,
+}: {
+  size?: number;
+  strokeWidth?: number;
+  className?: string;
+}) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M4 8.5 5.5 4h13L20 8.5" />
+      <path d="M4 8.5h16v10.5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V8.5Z" />
+      <path d="M9 12a3 3 0 0 0 6 0" />
+    </svg>
+  );
+}
+
+export function AccountIcon({
+  size = 22,
+  strokeWidth = 1.7,
+  className,
+}: {
+  size?: number;
+  strokeWidth?: number;
+  className?: string;
+}) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+    </svg>
+  );
+}
+
 /** Small gold count pill anchored to a relatively-positioned icon button/link. */
 export function CountBadge({ count }: { count: number }) {
   if (count <= 0) return null;

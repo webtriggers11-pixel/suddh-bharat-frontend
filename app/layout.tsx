@@ -4,6 +4,7 @@ import { site } from "./lib/site";
 import { QueryProvider } from "./lib/query/QueryProvider";
 import { AuthProvider } from "./lib/auth/AuthProvider";
 import { GuestMerge } from "./lib/guest/GuestMerge";
+import { BottomTabBar } from "./components/home/BottomTabBar";
 import "./globals.css";
 
 // Brand fonts (business/design-system.md): Fraunces display, Inter body, IBM Plex Mono.
@@ -37,11 +38,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${fraunces.variable} ${inter.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-paper text-ink">
+      {/* The var() fallback below is 0px, not a guessed bar height — the real
+          value always comes from :root's --bottom-tab-bar-height default
+          (globals.css) plus BottomTabBar's own measurement; a fallback here
+          can only matter if that declaration is ever removed. */}
+      <body className="min-h-full flex flex-col bg-paper text-ink pb-[var(--bottom-tab-bar-height,0px)] md:pb-0">
         <QueryProvider>
           <AuthProvider>
             <GuestMerge />
             {children}
+            <BottomTabBar />
           </AuthProvider>
         </QueryProvider>
       </body>

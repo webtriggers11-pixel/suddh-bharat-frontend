@@ -35,10 +35,14 @@
 
 :root {
   color-scheme: light;
-  /* Height the StickyAddToCartBar currently occupies (0 when hidden) — lets
-     other fixed bottom surfaces (PWABadge) shift up instead of overlapping
-     it. Set via JS (measured element height, not a magic number) in
-     StickyAddToCartBar. */
+  /* Heights fixed bottom-of-viewport surfaces currently occupy, so the ones
+     stacked above them (StickyAddToCartBar above BottomTabBar; PWABadge
+     above both) can shift up instead of overlapping. Set via JS (measured
+     element height, not a magic number) — --bottom-tab-bar-height in
+     BottomTabBar (mounted once in the root layout, so this is close to its
+     real value almost immediately after first paint), --sticky-atc-height in
+     StickyAddToCartBar (0 when that bar is hidden). */
+  --bottom-tab-bar-height: 0px;
   --sticky-atc-height: 0px;
 }
 

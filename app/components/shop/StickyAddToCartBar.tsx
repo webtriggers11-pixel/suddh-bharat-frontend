@@ -12,10 +12,12 @@ import { formatINR } from "../../lib/api/catalog";
  * browsing description/reviews/related-products further down the page.
  * `md:hidden` — desktop keeps the inline button only.
  *
- * While visible, publishes its measured height as `--sticky-atc-height` (a
- * CSS custom property on the root, defined in globals.css) so other fixed
- * bottom surfaces on the same page — currently `PWABadge` — can shift up
- * instead of being overlapped by this bar.
+ * Anchors its `bottom` to `--bottom-tab-bar-height` (published by
+ * `BottomTabBar`, CHORE-025) so it stacks above the tab bar instead of
+ * overlapping it, and — while visible — publishes its own measured height as
+ * `--sticky-atc-height` so surfaces stacked above IT (currently `PWABadge`)
+ * shift up in turn. Three fixed bottom-of-viewport surfaces, one consistent
+ * stacking mechanism.
  */
 export function StickyAddToCartBar({
   productId,
@@ -63,7 +65,7 @@ export function StickyAddToCartBar({
       {visible && (
         <div
           ref={barRef}
-          className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 px-4 pt-3 pb-safe-bottom shadow-card backdrop-blur md:hidden"
+          className="fixed inset-x-0 bottom-[var(--bottom-tab-bar-height,0px)] z-40 border-t border-line bg-white/95 px-4 pt-3 pb-safe-bottom shadow-card backdrop-blur md:hidden"
         >
           <div className="flex items-center gap-3 pb-3">
             <div className="min-w-0 flex-1">

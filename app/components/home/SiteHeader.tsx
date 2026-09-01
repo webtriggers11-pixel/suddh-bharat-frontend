@@ -74,10 +74,13 @@ export function SiteHeader() {
           >
             {authLabel}
           </Link>
+          {/* Wishlist/Cart hidden below md — BottomTabBar (CHORE-025) owns
+              both on mobile; showing the same destination in both places at
+              once would be a duplicate, not a convenience. */}
           <Link
             href="/wishlist"
             aria-label={`Wishlist (${wishlistCount})`}
-            className="relative hidden text-ink hover:text-forest sm:inline-flex"
+            className="relative hidden text-ink hover:text-forest md:inline-flex"
           >
             <HeartIcon size={22} strokeWidth={1.7} />
             <CountBadge count={wishlistCount} />
@@ -88,7 +91,7 @@ export function SiteHeader() {
           <Link
             href="/cart"
             aria-label={`Cart (${count})`}
-            className="relative flex items-center gap-2 text-ink hover:text-forest lg:rounded-chip lg:bg-forest lg:px-5 lg:py-2.5 lg:text-paper lg:hover:text-paper"
+            className="relative hidden items-center gap-2 text-ink hover:text-forest md:flex lg:rounded-chip lg:bg-forest lg:px-5 lg:py-2.5 lg:text-paper lg:hover:text-paper"
           >
             <span className="relative lg:hidden">
               <CartIcon size={23} strokeWidth={1.7} />
