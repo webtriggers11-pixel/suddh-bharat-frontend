@@ -110,7 +110,7 @@ export function ProductReviews({
           </p>
         ) : done ? (
           <p role="status" className="font-body text-sm text-forest">
-            Thanks! Your review is submitted and will appear once approved.
+            Thanks! Your review is live.
           </p>
         ) : (
           <form
