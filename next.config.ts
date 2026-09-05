@@ -1,12 +1,13 @@
 import withSerwistInit from "@serwist/next";
 import type { NextConfig } from "next";
 
-// Installable PWA via Serwist (App Router). SW disabled in dev to avoid stale
-// caches; active in production build/preview. See ADR-0007.
+// Installable PWA via Serwist (App Router). See ADR-0007.
+const isDev = process.env.NODE_ENV === "development";
+
 const withSerwist = withSerwistInit({
   swSrc: "app/sw.ts",
   swDest: "public/sw.js",
-  disable: process.env.NODE_ENV === "development",
+  disable: isDev,
 });
 
 const nextConfig: NextConfig = {
@@ -20,4 +21,12 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSerwist(nextConfig);
+// In dev the service worker is off anyway, but merely WRAPPING the config
+// still installs Serwist's webpack plugin — which pins `next dev` to the
+// legacy `--webpack` builder. That builder regenerates the RSC client-
+// reference manifest unreliably: adding any component file while the dev
+// server runs broke every page with "Element type is invalid. Received a
+// promise that resolves to: undefined" until a full rebuild. Skipping the
+// wrapper in dev lets `next dev` use Turbopack (Next 16's default) and keeps
+// the SW/manifest exactly as before in `next build --webpack`.
+export default isDev ? nextConfig : withSerwist(nextConfig);
