@@ -1,10 +1,12 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { Container } from "../ui/Container";
 import { SectionHeading } from "../ui/SectionHeading";
 import { Reveal } from "../motion/Reveal";
 import { Tappable } from "../motion/Tappable";
+import { SkeletonBlock } from "../ui/Skeleton";
 import { catalogApi, type Category } from "../../lib/api/catalog";
-import { CATEGORY_EDITORIAL, type CategoryTone } from "./content";
+import { CATEGORY_EDITORIAL, CATEGORY_SHELF, type CategoryTone } from "./content";
 
 const TONES: Record<CategoryTone, { card: string; index: string; copy: string }> = {
   dark: {
@@ -21,13 +23,15 @@ const TONES: Record<CategoryTone, { card: string; index: string; copy: string }>
 };
 
 /** The first tile anchors the grid; the rest alternate. */
-function toneFor(i: number): CategoryTone {
+export function toneFor(i: number): CategoryTone {
   if (i === 0) return "dark";
   return i % 2 === 1 ? "light" : "gold";
 }
 
-interface Tile {
+export interface Tile {
   slug: string;
+  /** Position in the grid, used for both the label and the span. */
+  position: number;
   index: string;
   title: string;
   copy: string;
@@ -40,16 +44,25 @@ interface Tile {
  * their names and their order; `CATEGORY_EDITORIAL` supplies the brand copy the
  * schema has no column for, and a category's own description overrides it.
  */
-function toTile(category: Category, i: number): Tile {
+export function toTile(category: Category, i: number): Tile {
   const editorial = CATEGORY_EDITORIAL[category.slug];
   return {
     slug: category.slug,
+    position: i,
     index: `${String(i + 1).padStart(2, "0")} / ${category.name.toUpperCase()}`,
     title: editorial?.title ?? category.name,
     copy: category.description ?? editorial?.copy ?? "",
     tone: toneFor(i),
     featured: i === 0,
   };
+}
+
+/** The featured tile is double-height; a trailing odd tile spans the full row
+ * so an even-length grid doesn't end with a hole. */
+export function gridSpan(tile: Tile, total: number): string {
+  if (tile.featured) return "lg:row-span-2";
+  if (total % 2 === 0 && tile.position === total - 1) return "lg:col-span-2";
+  return "";
 }
 
 function CategoryCard({ tile }: { tile: Tile }) {
@@ -73,43 +86,28 @@ function CategoryCard({ tile }: { tile: Tile }) {
   );
 }
 
-function gridSpan(tile: Tile, total: number): string {
-  if (tile.featured) return "lg:row-span-2";
-  // The last tile of an even-length grid would leave a hole — let it span.
-  if (total % 2 === 0 && tile.index.startsWith(String(total).padStart(2, "0")))
-    return "lg:col-span-2";
-  return "";
+/** Design-system Rule 5: a section that awaits data ships a Skeleton, so the
+ * homepage streams instead of blocking on the catalogue. Mirrors the real
+ * grid's shape (one tall tile + stacked tiles). */
+function ShelfSkeleton() {
+  return (
+    <div className="mt-12 grid gap-5 lg:grid-cols-2">
+      <SkeletonBlock className="min-h-[280px] rounded-card lg:row-span-2 lg:min-h-[560px]" />
+      <SkeletonBlock className="min-h-[220px] rounded-card" />
+      <SkeletonBlock className="min-h-[220px] rounded-card" />
+    </div>
+  );
 }
 
-const COUNT_WORDS = [
-  "No",
-  "One",
-  "Two",
-  "Three",
-  "Four",
-  "Five",
-  "Six",
-  "Seven",
-  "Eight",
-  "Nine",
-  "Ten",
-];
-
-/** "Four categories." — but honest when the admin adds or removes one. */
-function headline(n: number): string {
-  const word = COUNT_WORDS[n] ?? String(n);
-  return `${word} ${n === 1 ? "category" : "categories"}. One published standard.`;
-}
-
-export async function CategoryShelf() {
+async function ShelfGrid() {
   const categories = await catalogApi.categories();
   if (categories.length === 0) return null;
   const tiles = categories.map(toTile);
 
   return (
-    <Container as="section" id="categories" className="py-20 md:py-24">
-      <SectionHeading eyebrow="Shop by category">
-        {headline(tiles.length)}
+    <>
+      <SectionHeading eyebrow={CATEGORY_SHELF.eyebrow}>
+        {CATEGORY_SHELF.headline(tiles.length)}
       </SectionHeading>
       <div className="mt-12 grid gap-5 lg:grid-cols-2">
         {tiles.map((tile, i) => (
@@ -124,6 +122,16 @@ export async function CategoryShelf() {
           </Reveal>
         ))}
       </div>
+    </>
+  );
+}
+
+export function CategoryShelf() {
+  return (
+    <Container as="section" id="categories" className="py-20 md:py-24">
+      <Suspense fallback={<ShelfSkeleton />}>
+        <ShelfGrid />
+      </Suspense>
     </Container>
   );
 }

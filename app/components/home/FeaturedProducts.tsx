@@ -1,10 +1,12 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { Container } from "../ui/Container";
 import { SectionHeading } from "../ui/SectionHeading";
-import { PRODUCT_GRID_CLASS } from "../ui/Skeleton";
+import { PRODUCT_GRID_CLASS, SkeletonCardGrid } from "../ui/Skeleton";
 import { ProductCard } from "../shop/ProductCard";
 import { Reveal } from "../motion/Reveal";
 import { catalogApi, type Product } from "../../lib/api/catalog";
+import { FEATURED_PRODUCTS } from "./content";
 
 const COUNT = 4;
 
@@ -29,28 +31,24 @@ export async function pickProducts(): Promise<Product[]> {
   return newest.items;
 }
 
-export async function FeaturedProducts() {
+async function ProductRail() {
   const products = await pickProducts();
   if (products.length === 0) return null;
 
   return (
-    <Container
-      as="section"
-      aria-labelledby="featured-products-heading"
-      className="py-20 md:py-24"
-    >
+    <>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <SectionHeading
-          eyebrow="On the shelf"
+          eyebrow={FEATURED_PRODUCTS.eyebrow}
           id="featured-products-heading"
         >
-          Verified and ready to ship.
+          {FEATURED_PRODUCTS.headline}
         </SectionHeading>
         <Link
           href="/shop"
           className="font-body text-sm font-medium text-forest underline-offset-4 hover:underline"
         >
-          Shop all →
+          {FEATURED_PRODUCTS.allLink}
         </Link>
       </div>
       <ul className={`${PRODUCT_GRID_CLASS} mt-10`}>
@@ -62,6 +60,22 @@ export async function FeaturedProducts() {
           </li>
         ))}
       </ul>
+    </>
+  );
+}
+
+/** Design-system Rule 5: the rail awaits the catalogue, so it ships a Skeleton
+ * and streams rather than blocking the whole homepage on a backend call. */
+export function FeaturedProducts() {
+  return (
+    <Container
+      as="section"
+      aria-labelledby="featured-products-heading"
+      className="py-20 md:py-24"
+    >
+      <Suspense fallback={<SkeletonCardGrid count={COUNT} className="mt-10" />}>
+        <ProductRail />
+      </Suspense>
     </Container>
   );
 }

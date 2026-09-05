@@ -10,6 +10,34 @@ export const LEDGER = [
 
 export type CategoryTone = "dark" | "light" | "gold";
 
+/** Homepage section copy (kept out of the components, like every other section). */
+export const CATEGORY_SHELF = {
+  eyebrow: "Shop by category",
+  /** "Four categories. One published standard." — honest about the real count. */
+  headline: (n: number) =>
+    `${COUNT_WORDS[n] ?? n} ${n === 1 ? "category" : "categories"}. One published standard.`,
+} as const;
+
+const COUNT_WORDS = [
+  "No",
+  "One",
+  "Two",
+  "Three",
+  "Four",
+  "Five",
+  "Six",
+  "Seven",
+  "Eight",
+  "Nine",
+  "Ten",
+];
+
+export const FEATURED_PRODUCTS = {
+  eyebrow: "On the shelf",
+  headline: "Verified and ready to ship.",
+  allLink: "Shop all \u2192",
+} as const;
+
 /**
  * Editorial headline + copy per category slug. The catalogue is the source of
  * truth for WHICH categories exist and what they are called (FEAT-021); this
