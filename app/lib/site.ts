@@ -1,10 +1,9 @@
 // Site constants come from config/seo.json via ./seo (single source — DRY).
 export { site } from "./seo";
 
-// Shipping policy (paise) — shared by checkout's fee calc and the PDP trust
-// line so the two can never state different thresholds.
-export const FREE_SHIPPING_MINOR = 49900;
-export const FLAT_SHIPPING_MINOR = 4900;
+// Shipping policy now comes from the admin's Store Settings via
+// lib/api/store.ts (FEAT-023); FALLBACK_POLICY there holds the old constants
+// for when the backend is unreachable.
 
 export type NavItem = { label: string; href: string; muted?: boolean };
 

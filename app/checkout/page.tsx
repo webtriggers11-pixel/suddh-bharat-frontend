@@ -29,7 +29,8 @@ import {
   SkeletonBlock,
   SkeletonListRows,
 } from "../components/ui/Skeleton";
-import { FREE_SHIPPING_MINOR, FLAT_SHIPPING_MINOR } from "../lib/site";
+import { shippingFeeMinor } from "../lib/api/store";
+import { useStorePolicy } from "../lib/store/StorePolicyProvider";
 import { VerificationStamp } from "../components/home/VerificationStamp";
 
 const EMPTY_FORM: AddressInput = {
@@ -45,6 +46,7 @@ const EMPTY_FORM: AddressInput = {
 export default function CheckoutPage() {
   const { user, loading: authLoading, getToken, applyResult } = useAuth();
   const { cart, loading: cartLoading, refresh } = useCart();
+  const policy = useStorePolicy();
   const router = useRouter();
   const qc = useQueryClient();
 
@@ -87,8 +89,9 @@ export default function CheckoutPage() {
     });
   }, [loadingAddr, addresses]);
 
-  const shippingMinor =
-    cart.totalMinor >= FREE_SHIPPING_MINOR ? 0 : FLAT_SHIPPING_MINOR;
+  // Terms come from the admin's Store Settings, not a hardcoded copy, so this
+  // estimate can never contradict what the server charges (FEAT-023).
+  const shippingMinor = shippingFeeMinor(cart.totalMinor, policy);
   const discountMinor = applied
     ? Math.min(applied.discountAmountMinor, cart.totalMinor)
     : 0;

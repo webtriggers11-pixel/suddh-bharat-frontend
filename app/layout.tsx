@@ -3,6 +3,8 @@ import { Fraunces, Inter, IBM_Plex_Mono } from "next/font/google";
 import { buildNav, site } from "./lib/site";
 import { catalogApi } from "./lib/api/catalog";
 import { CategoryNavProvider } from "./lib/nav/CategoryNavProvider";
+import { getStorePolicy } from "./lib/api/store";
+import { StorePolicyProvider } from "./lib/store/StorePolicyProvider";
 import { QueryProvider } from "./lib/query/QueryProvider";
 import { AuthProvider } from "./lib/auth/AuthProvider";
 import { GuestMerge } from "./lib/guest/GuestMerge";
@@ -38,7 +40,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   // One cached catalogue read for the whole app (tag: "categories" — the
   // backend busts it on every admin category write), so the header's category
   // strip is the admin's live list rather than a hardcoded one (FEAT-021).
-  const nav = buildNav(await catalogApi.categories());
+  const [categories, policy] = await Promise.all([
+    catalogApi.categories(),
+    getStorePolicy(),
+  ]);
+  const nav = buildNav(categories);
 
   return (
     <html
@@ -53,9 +59,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <QueryProvider>
           <AuthProvider>
             <CategoryNavProvider nav={nav}>
-              <GuestMerge />
-              {children}
-              <BottomTabBar />
+              <StorePolicyProvider policy={policy}>
+                <GuestMerge />
+                {children}
+                <BottomTabBar />
+              </StorePolicyProvider>
             </CategoryNavProvider>
           </AuthProvider>
         </QueryProvider>

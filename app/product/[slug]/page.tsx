@@ -14,7 +14,7 @@ import { RelatedProducts } from "../../components/shop/RelatedProducts";
 import { StickyAddToCartBar } from "../../components/shop/StickyAddToCartBar";
 import { VerificationStamp } from "../../components/home/VerificationStamp";
 import { catalogApi, discountPct, formatINR } from "../../lib/api/catalog";
-import { FREE_SHIPPING_MINOR } from "../../lib/site";
+import { getStorePolicy } from "../../lib/api/store";
 
 export async function generateMetadata({
   params,
@@ -43,7 +43,10 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = await catalogApi.product(slug);
+  const [product, policy] = await Promise.all([
+    catalogApi.product(slug),
+    getStorePolicy(),
+  ]);
   if (!product) notFound();
 
   const off = discountPct(product.priceMinor, product.mrpMinor);
@@ -130,7 +133,9 @@ export default async function ProductPage({
 
             <div className="mt-8 flex items-center gap-2 font-mono text-[11px] uppercase tracking-wide text-forest">
               <VerificationStamp size="sm" />
-              Verified · Free shipping over {formatINR(FREE_SHIPPING_MINOR)}
+              {policy.freeShippingThresholdMinor === null
+                ? "Verified · Flat-rate shipping"
+                : `Verified · Free shipping over ${formatINR(policy.freeShippingThresholdMinor)}`}
             </div>
 
             <div className="mt-3 flex flex-wrap items-start gap-3">
