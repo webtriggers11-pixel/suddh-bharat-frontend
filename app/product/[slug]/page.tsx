@@ -13,8 +13,15 @@ import { ProductReviews } from "../../components/shop/ProductReviews";
 import { RelatedProducts } from "../../components/shop/RelatedProducts";
 import { StickyAddToCartBar } from "../../components/shop/StickyAddToCartBar";
 import { VerificationStamp } from "../../components/home/VerificationStamp";
-import { catalogApi, discountPct, formatINR } from "../../lib/api/catalog";
+import {
+  catalogApi,
+  discountPct,
+  formatINR,
+  type Category,
+} from "../../lib/api/catalog";
 import { getStorePolicy } from "../../lib/api/store";
+import { breadcrumbJsonLd, productJsonLd } from "../../lib/jsonld";
+import { JsonLd } from "../../components/seo/JsonLd";
 
 export async function generateMetadata({
   params,
@@ -43,14 +50,18 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [product, policy] = await Promise.all([
+  const [product, policy, categories] = await Promise.all([
     catalogApi.product(slug),
     getStorePolicy(),
+    // Cached and deduped with the layout's own read — this only resolves the
+    // product's category to a name for the structured data (FEAT-028).
+    catalogApi.categories(),
   ]);
   if (!product) notFound();
 
   const off = discountPct(product.priceMinor, product.mrpMinor);
   const inStock = product.stock > 0;
+  const categoryName = categoryPathFor(categories, product.categoryId);
 
   return (
     <>
@@ -202,8 +213,31 @@ export default async function ProductPage({
       </main>
       <SiteFooter />
       <PWABadge />
+      {/* Structured data mirrors exactly what the page shows above — the price,
+          the in-stock state, the rating when there is one, and the same two
+          crumbs as the visible breadcrumb. */}
+      <JsonLd data={productJsonLd(product, { categoryName })} />
+      <JsonLd
+        data={breadcrumbJsonLd(`/product/${product.slug}`, [
+          { name: "Shop", path: "/shop" },
+          { name: product.name },
+        ])}
+      />
     </>
   );
+}
+
+/** "Food & Pantry > Staples" for the Product.category text. */
+function categoryPathFor(
+  categories: Category[],
+  categoryId: string | null,
+): string | null {
+  for (const parent of categories) {
+    if (parent.id === categoryId) return parent.name;
+    const child = (parent.children ?? []).find((c) => c.id === categoryId);
+    if (child) return `${parent.name} > ${child.name}`;
+  }
+  return null;
 }
 
 function Detail({ label, value }: { label: string; value: string }) {

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { pageMetadata, structuredData } from "./lib/seo";
+import { pageMetadata } from "./lib/seo";
+import { organizationGraph } from "./lib/jsonld";
 import { SiteHeader } from "./components/home/SiteHeader";
 import { Hero } from "./components/home/Hero";
 import { TrustLedger } from "./components/home/TrustLedger";
@@ -32,7 +33,7 @@ export default function Home() {
       </main>
       <SiteFooter />
       <PWABadge />
-      <JsonLd data={structuredData()} />
+      <JsonLd data={organizationGraph()} />
     </>
   );
 }

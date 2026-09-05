@@ -115,28 +115,3 @@ export function pageMetadata(key: PageKey): Metadata {
 }
 
 /** Organization + WebSite JSON-LD, derived from the site config (no repetition). */
-export function structuredData() {
-  const org = { "@id": `${site.url}/#organization` };
-  return {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Organization",
-        ...org,
-        name: site.name,
-        url: site.url,
-        description: site.description,
-        slogan: site.tagline,
-      },
-      {
-        "@type": "WebSite",
-        "@id": `${site.url}/#website`,
-        url: site.url,
-        name: site.name,
-        description: site.description,
-        publisher: org,
-        inLanguage: "en-IN",
-      },
-    ],
-  };
-}

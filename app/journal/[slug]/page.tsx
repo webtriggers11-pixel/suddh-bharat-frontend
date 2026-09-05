@@ -6,6 +6,8 @@ import { SiteFooter } from "../../components/home/SiteFooter";
 import { PWABadge } from "../../components/pwa/PWABadge";
 import { Container } from "../../components/ui/Container";
 import { Eyebrow } from "../../components/ui/Eyebrow";
+import { articleJsonLd, breadcrumbJsonLd } from "../../lib/jsonld";
+import { JsonLd } from "../../components/seo/JsonLd";
 import { ARTICLES, getArticle, formatArticleDate } from "../content";
 
 export function generateStaticParams() {
@@ -83,6 +85,14 @@ export default async function JournalArticlePage({
       </main>
       <SiteFooter />
       <PWABadge />
+      <JsonLd data={articleJsonLd(article)} />
+      {/* Matches the two crumbs the page renders above. */}
+      <JsonLd
+        data={breadcrumbJsonLd(`/journal/${article.slug}`, [
+          { name: "Journal", path: "/journal" },
+          { name: article.title },
+        ])}
+      />
     </>
   );
 }
