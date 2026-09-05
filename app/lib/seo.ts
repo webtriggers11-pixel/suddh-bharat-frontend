@@ -7,6 +7,38 @@ export const site = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? seo.site.url,
 };
 
+/** The production host from config/seo.json, ignoring any env override. */
+export const CANONICAL_HOST = new URL(seo.site.url).host;
+
+/**
+ * True only on the real production host (FEAT-027). Preview deployments and
+ * localhost must not be crawled, or they compete with production for the same
+ * content in search results.
+ *
+ * Takes the host the request actually arrived on rather than trusting
+ * `site.url`: a preview deploy that forgets to set `NEXT_PUBLIC_SITE_URL`
+ * would otherwise report itself as production, which is precisely the case
+ * worth catching. A missing header falls back to the configured URL.
+ */
+export function isCanonicalHost(requestHost?: string | null): boolean {
+  if (requestHost) return stripPort(requestHost) === stripPort(CANONICAL_HOST);
+  try {
+    return stripPort(new URL(site.url).host) === stripPort(CANONICAL_HOST);
+  } catch {
+    return false;
+  }
+}
+
+function stripPort(host: string): string {
+  return host.toLowerCase().replace(/:\d+$/, "");
+}
+
+/** Absolute URL on the resolved site origin, e.g. "/shop" → "https://…/shop". */
+export function absoluteUrl(path: string): string {
+  const base = site.url.replace(/\/+$/, "");
+  return path === "/" ? base : `${base}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 type PageSeo = {
   path: string;
   title: string;

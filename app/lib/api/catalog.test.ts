@@ -1,5 +1,11 @@
-import { describe, it, expect } from "vitest";
-import { formatINR, discountPct } from "./catalog";
+import { describe, it, expect, vi } from "vitest";
+import {
+  catalogApi,
+  discountPct,
+  fetchAllProducts,
+  formatINR,
+  type Product,
+} from "./catalog";
 
 describe("formatINR", () => {
   it("formats whole rupees with Indian grouping and no decimals", () => {
@@ -26,5 +32,64 @@ describe("discountPct", () => {
     expect(discountPct(42000, 42000)).toBe(0);
     expect(discountPct(50000, 42000)).toBe(0);
     expect(discountPct(1000, 0)).toBe(0);
+  });
+});
+
+describe("fetchAllProducts (FEAT-027)", () => {
+  const page = (items: string[], totalPages: number, pageNo: number) => ({
+    items: items.map((slug) => ({ slug }) as Product),
+    total: totalPages * 100,
+    page: pageNo,
+    pageSize: 100,
+    totalPages,
+  });
+
+  /**
+   * The backend caps pageSize at 100, so a single request would silently
+   * truncate the sitemap the moment the catalogue outgrows one page.
+   */
+  it("pages until the catalogue is exhausted", async () => {
+    const spy = vi
+      .spyOn(catalogApi, "products")
+      .mockResolvedValueOnce(page(["a", "b"], 3, 1))
+      .mockResolvedValueOnce(page(["c"], 3, 2))
+      .mockResolvedValueOnce(page(["d"], 3, 3));
+
+    const all = await fetchAllProducts();
+
+    expect(all.map((p) => p.slug)).toEqual(["a", "b", "c", "d"]);
+    expect(spy).toHaveBeenCalledTimes(3);
+    expect(spy).toHaveBeenNthCalledWith(1, { page: 1, pageSize: 100 });
+    expect(spy).toHaveBeenNthCalledWith(3, { page: 3, pageSize: 100 });
+    spy.mockRestore();
+  });
+
+  it("stops after a single page when that is all there is", async () => {
+    const spy = vi
+      .spyOn(catalogApi, "products")
+      .mockResolvedValue(page(["a"], 1, 1));
+    expect(await fetchAllProducts()).toHaveLength(1);
+    expect(spy).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
+  });
+
+  // A backend that reports a wrong totalPages must not spin forever.
+  it("honours the maxPages safety stop", async () => {
+    const spy = vi
+      .spyOn(catalogApi, "products")
+      .mockResolvedValue(page(["a"], 9999, 1));
+    await fetchAllProducts(3);
+    expect(spy).toHaveBeenCalledTimes(3);
+    spy.mockRestore();
+  });
+
+  // An empty page ends the loop even if totalPages disagrees.
+  it("stops on an empty page", async () => {
+    const spy = vi
+      .spyOn(catalogApi, "products")
+      .mockResolvedValue(page([], 5, 1));
+    expect(await fetchAllProducts()).toEqual([]);
+    expect(spy).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
   });
 });

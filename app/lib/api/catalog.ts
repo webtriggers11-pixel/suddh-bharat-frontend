@@ -11,6 +11,8 @@ export interface Category {
   parentId: string | null;
   sortOrder: number;
   isActive: boolean;
+  /** Present on the API payload; used as the sitemap's `lastmod` (FEAT-027). */
+  updatedAt?: string;
   children?: Category[];
 }
 
@@ -140,6 +142,24 @@ export const catalogApi = {
       CACHE.product(slug),
     ),
 };
+
+/**
+ * Every active product, paged out of the listing (FEAT-027, for the sitemap).
+ * The backend caps `pageSize` at 100, so a single request would silently
+ * truncate the sitemap the moment the catalogue outgrows one page. `maxPages`
+ * is a safety stop — 100 pages x 100 products is 10,000 URLs, well inside the
+ * 50,000-URL sitemap limit, and far past anything this catalogue will hit
+ * before it needs `generateSitemaps`.
+ */
+export async function fetchAllProducts(maxPages = 100): Promise<Product[]> {
+  const all: Product[] = [];
+  for (let page = 1; page <= maxPages; page++) {
+    const result = await catalogApi.products({ page, pageSize: 100 });
+    all.push(...result.items);
+    if (result.items.length === 0 || page >= result.totalPages) break;
+  }
+  return all;
+}
 
 /** Build the products query string shared by server + client fetchers. */
 function productsQuery(filters: ProductFilters): string {
