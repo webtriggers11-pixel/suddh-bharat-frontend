@@ -10,39 +10,34 @@ export const LEDGER = [
 
 export type CategoryTone = "dark" | "light" | "gold";
 
-export const CATEGORIES: {
-  index: string;
-  title: string;
-  copy: string;
-  tone: CategoryTone;
-  featured?: boolean;
-}[] = [
-  {
-    index: "01 / FOOD & PANTRY",
+/**
+ * Editorial headline + copy per category slug. The catalogue is the source of
+ * truth for WHICH categories exist and what they are called (FEAT-021); this
+ * supplies the homepage's brand voice, which the DB has no column for. An
+ * admin overrides the copy by filling the category's description; a category
+ * with neither falls back to its own name.
+ */
+export const CATEGORY_EDITORIAL: Record<
+  string,
+  { title: string; copy: string }
+> = {
+  food: {
     title: "Additive-free staples & snacks",
     copy: "Everyday essentials checked for artificial colours, preservatives, and hidden sugar.",
-    tone: "dark",
-    featured: true,
   },
-  {
-    index: "02 / BABY",
+  baby: {
     title: "Non-toxic, always",
     copy: "Skincare, food, cloth & toys checked before they touch your child.",
-    tone: "light",
   },
-  {
-    index: "03 / BEAUTY",
+  beauty: {
     title: "Paraben & sulfate-free",
     copy: "Full ingredient list published on every product. No exceptions.",
-    tone: "gold",
   },
-  {
-    index: "04 / CLOTHING",
+  clothing: {
     title: "Organic fibre, natural dye",
     copy: "Slow fashion from fair-trade and ethically audited makers.",
-    tone: "light",
   },
-];
+};
 
 export const STEPS = [
   {

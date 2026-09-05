@@ -22,16 +22,26 @@ vi.mock("../../lib/wishlist/WishlistProvider", () => ({
 
 import { AuthProvider } from "../../lib/auth/AuthProvider";
 import { TestQueryProvider } from "../../lib/query/TestQueryProvider";
+import { CategoryNavProvider } from "../../lib/nav/CategoryNavProvider";
+import { buildNav, type NavItem } from "../../lib/site";
 
 // No tokens in localStorage → AuthProvider makes no network call.
-const renderHeader = () =>
-  render(
+const renderHeader = (nav?: NavItem[]) => {
+  const tree = (
     <TestQueryProvider>
       <AuthProvider>
-        <SiteHeader />
+        {nav ? (
+          <CategoryNavProvider nav={nav}>
+            <SiteHeader />
+          </CategoryNavProvider>
+        ) : (
+          <SiteHeader />
+        )}
       </AuthProvider>
-    </TestQueryProvider>,
+    </TestQueryProvider>
   );
+  return render(tree);
+};
 
 describe("SiteHeader", () => {
   beforeEach(() => {
@@ -142,4 +152,51 @@ describe("SiteHeader", () => {
       expect(screen.queryByRole("navigation", { name: /mobile/i })).not.toBeInTheDocument(),
     );
   });
+
+  /**
+   * FEAT-021 — the category strip is the admin's live catalogue, not a
+   * hardcoded list. Rendered outside the provider it falls back to the static
+   * NAV, so a header in any other tree still works.
+   */
+  describe("category strip", () => {
+    it("renders the categories supplied by the provider", () => {
+      renderHeader(
+        buildNav([
+          { name: "Pantry Staples", slug: "food" },
+          { name: "Wellness", slug: "wellness" },
+        ]),
+      );
+      const strip = screen.getByRole("navigation", { name: /categories/i });
+      expect(
+        within(strip).getByRole("link", { name: "Pantry Staples" }),
+      ).toHaveAttribute("href", "/shop?category=food");
+      expect(
+        within(strip).getByRole("link", { name: "Wellness" }),
+      ).toHaveAttribute("href", "/shop?category=wellness");
+      // The old hardcoded label is gone once the catalogue is renamed.
+      expect(within(strip).queryByRole("link", { name: "Food" })).toBeNull();
+    });
+
+    it("keeps the secondary links after the categories", () => {
+      renderHeader(buildNav([{ name: "Baby", slug: "baby" }]));
+      const strip = screen.getByRole("navigation", { name: /categories/i });
+      const labels = within(strip)
+        .getAllByRole("link")
+        .map((a) => a.textContent);
+      expect(labels).toEqual([
+        "Shop",
+        "Baby",
+        "Our Standard",
+        "Sell on Shuddha",
+        "Journal",
+      ]);
+    });
+
+    it("falls back to the static nav outside the provider", () => {
+      renderHeader();
+      const strip = screen.getByRole("navigation", { name: /categories/i });
+      expect(within(strip).getByRole("link", { name: "Food" })).toBeVisible();
+    });
+  });
+
 });

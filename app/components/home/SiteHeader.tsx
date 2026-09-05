@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { NAV } from "../../lib/site";
+import { useCategoryNav } from "../../lib/nav/CategoryNavProvider";
 import { useAuth } from "../../lib/auth/AuthProvider";
 import { useCart } from "../../lib/cart/CartProvider";
 import { useWishlist } from "../../lib/wishlist/WishlistProvider";
@@ -14,11 +14,6 @@ import { Container } from "../ui/Container";
 import { DURATION, EASE } from "../motion/tokens";
 import { CartIcon, CountBadge, HeartIcon, SearchIcon } from "../ui/icons";
 
-// Sidebar's secondary-links section reuses NAV's own `muted` items (Our
-// Standard, Sell on Shuddha, Journal) — one source of truth shared with Row
-// 2's category strip, not a second hardcoded label/href list.
-const SIDEBAR_LINKS = NAV.filter((item) => item.muted);
-
 /**
  * Two-tier header (nykaa.com-style structure, Shuddha tokens/fonts): a utility
  * row (logo + search + account/wishlist/cart) over a persistent, always-visible
@@ -26,6 +21,13 @@ const SIDEBAR_LINKS = NAV.filter((item) => item.muted);
  * mobile) since categories never hide behind it.
  */
 export function SiteHeader() {
+  // Row 2's category strip comes from the live catalogue (FEAT-021). The
+  // sidebar's secondary-links section reuses this same list's `muted` items
+  // (Our Standard, Sell on Shuddha, Journal) — one source of truth for both
+  // call sites, not a second hardcoded label/href array.
+  const nav = useCategoryNav();
+  const sidebarLinks = nav.filter((item) => item.muted);
+
   const [open, setOpen] = useState(false);
   // document.body only exists in the browser. useSyncExternalStore returns the
   // server snapshot (false) during SSR and the first hydration pass, then the
@@ -150,7 +152,7 @@ export function SiteHeader() {
               aria-label="Categories"
               className="flex items-center gap-6 overflow-x-auto whitespace-nowrap py-2.5 [-ms-overflow-style:none] [scrollbar-width:none] lg:overflow-visible lg:whitespace-normal [&::-webkit-scrollbar]:hidden"
             >
-              {NAV.map((item) => (
+              {nav.map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
@@ -229,7 +231,7 @@ export function SiteHeader() {
                         {authLabel}
                       </Link>
                     </li>
-                    {SIDEBAR_LINKS.map((item) => (
+                    {sidebarLinks.map((item) => (
                       <li key={item.href}>
                         <Link
                           href={item.href}

@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter, IBM_Plex_Mono } from "next/font/google";
-import { site } from "./lib/site";
+import { buildNav, site } from "./lib/site";
+import { catalogApi } from "./lib/api/catalog";
+import { CategoryNavProvider } from "./lib/nav/CategoryNavProvider";
 import { QueryProvider } from "./lib/query/QueryProvider";
 import { AuthProvider } from "./lib/auth/AuthProvider";
 import { GuestMerge } from "./lib/guest/GuestMerge";
@@ -32,7 +34,12 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // One cached catalogue read for the whole app (tag: "categories" — the
+  // backend busts it on every admin category write), so the header's category
+  // strip is the admin's live list rather than a hardcoded one (FEAT-021).
+  const nav = buildNav(await catalogApi.categories());
+
   return (
     <html
       lang="en"
@@ -45,9 +52,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-paper text-ink pb-[var(--bottom-tab-bar-height,0px)] md:pb-0">
         <QueryProvider>
           <AuthProvider>
-            <GuestMerge />
-            {children}
-            <BottomTabBar />
+            <CategoryNavProvider nav={nav}>
+              <GuestMerge />
+              {children}
+              <BottomTabBar />
+            </CategoryNavProvider>
           </AuthProvider>
         </QueryProvider>
       </body>
