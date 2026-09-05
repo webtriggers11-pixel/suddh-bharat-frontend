@@ -16,12 +16,25 @@ export const CONFIGURED_HOST = (() => {
   }
 })();
 
-/** Lowercase, drop any port, and treat `www.x` and `x` as the same site. */
+/**
+ * Reduce a Host / X-Forwarded-Host value to a comparable hostname.
+ *
+ * Every step here exists because getting it wrong serves `Disallow: /` on the
+ * real site:
+ * - a chain of proxies (a CDN in front of the host) joins the forwarded values
+ *   into `"shuddha.in, internal.railway.app"` — the first entry is the client-
+ *   facing one;
+ * - a fully-qualified Host can carry a trailing dot (`shuddha.in.`);
+ * - the port is not part of the site's identity;
+ * - apex and `www.` are the same site.
+ */
 function normalizeHost(host: string): string {
   return host
+    .split(",")[0]
     .trim()
     .toLowerCase()
     .replace(/:\d+$/, "")
+    .replace(/\.$/, "")
     .replace(/^www\./, "");
 }
 
@@ -30,9 +43,10 @@ function normalizeHost(host: string): string {
  * and therefore safe to let search engines index (FEAT-027).
  *
  * Compared against `site.url` — what this deployment says it is — NOT against
- * a hardcoded production domain. That matters: the app is deployed on Railway
- * (`railway.json`), so before a custom domain is attached the public host is a
- * `*.up.railway.app` URL. Hardcoding shuddha.in would have served
+ * a hardcoded production domain. That matters: the backend already deploys to
+ * Railway (`apps/suddh-bharat-backend/railway.json`) and the storefront is
+ * expected to follow, so before a custom domain is attached the public host is
+ * a `*.up.railway.app` URL. Hardcoding shuddha.in would have served
  * `Disallow: /` on the real production site. Setting `NEXT_PUBLIC_SITE_URL` to
  * whatever the deployment actually serves is the single source of truth.
  *
@@ -63,6 +77,12 @@ type PageSeo = {
 };
 
 export type PageKey = keyof typeof seo.pages;
+
+/** Path for a page defined in config/seo.json — the same value `pageMetadata`
+ * builds the canonical from, so the sitemap cannot drift from it. */
+export function pagePath(key: PageKey): string {
+  return (seo.pages[key] as { path: string }).path;
+}
 
 /**
  * Build Next `Metadata` for a page from config/seo.json. DRY: description falls

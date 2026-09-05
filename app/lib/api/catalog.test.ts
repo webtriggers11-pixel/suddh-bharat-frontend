@@ -78,9 +78,38 @@ describe("fetchAllProducts (FEAT-027)", () => {
     const spy = vi
       .spyOn(catalogApi, "products")
       .mockResolvedValue(page(["a"], 9999, 1));
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     await fetchAllProducts(3);
     expect(spy).toHaveBeenCalledTimes(3);
     spy.mockRestore();
+    warn.mockRestore();
+  });
+
+  /**
+   * Stopping on the bound means a truncated sitemap — the exact failure this
+   * function exists to prevent. It must not be silent.
+   */
+  it("warns when it truncates at the bound", async () => {
+    const spy = vi
+      .spyOn(catalogApi, "products")
+      .mockResolvedValue(page(["a"], 9999, 1));
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    await fetchAllProducts(2);
+    expect(warn).toHaveBeenCalledOnce();
+    expect(String(warn.mock.calls[0][0])).toMatch(/truncated/i);
+    spy.mockRestore();
+    warn.mockRestore();
+  });
+
+  it("does not warn when the catalogue ends naturally", async () => {
+    const spy = vi
+      .spyOn(catalogApi, "products")
+      .mockResolvedValue(page(["a"], 1, 1));
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    await fetchAllProducts(1);
+    expect(warn).not.toHaveBeenCalled();
+    spy.mockRestore();
+    warn.mockRestore();
   });
 
   // An empty page ends the loop even if totalPages disagrees.

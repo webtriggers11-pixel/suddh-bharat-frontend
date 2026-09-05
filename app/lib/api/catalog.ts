@@ -112,18 +112,11 @@ async function get<T>(
 export const catalogApi = {
   categories: () => get<Category[]>("/categories", [], CACHE.categories),
 
+  // Shares `productsQuery` with the client-side fetcher — the two building the
+  // same filters differently would be a silent server/client mismatch.
   products: (filters: ProductFilters = {}) => {
-    const qs = new URLSearchParams();
-    if (filters.categorySlug) qs.set("categorySlug", filters.categorySlug);
-    if (filters.subcategorySlug)
-      qs.set("subcategorySlug", filters.subcategorySlug);
-    if (filters.search) qs.set("search", filters.search);
-    if (filters.sort) qs.set("sort", filters.sort);
-    if (filters.isFeatured) qs.set("isFeatured", "true");
-    qs.set("page", String(filters.page ?? 1));
-    qs.set("pageSize", String(filters.pageSize ?? 24));
     return get<Paginated<Product>>(
-      `/products?${qs.toString()}`,
+      `/products?${productsQuery(filters)}`,
       {
         items: [],
         total: 0,
@@ -156,7 +149,17 @@ export async function fetchAllProducts(maxPages = 100): Promise<Product[]> {
   for (let page = 1; page <= maxPages; page++) {
     const result = await catalogApi.products({ page, pageSize: 100 });
     all.push(...result.items);
-    if (result.items.length === 0 || page >= result.totalPages) break;
+    if (result.items.length === 0 || page >= result.totalPages) return all;
+    if (page === maxPages) {
+      // Exiting on the bound rather than a natural break means the sitemap is
+      // truncated — the exact failure this function exists to prevent, one
+      // order of magnitude up. Say so instead of shipping a short sitemap.
+      console.warn(
+        `[sitemap] stopped at the ${maxPages}-page safety bound with ` +
+          `${result.totalPages} pages reported; the sitemap is truncated at ` +
+          `${all.length} products. Switch to generateSitemaps().`,
+      );
+    }
   }
   return all;
 }

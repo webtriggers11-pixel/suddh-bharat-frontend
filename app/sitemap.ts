@@ -1,17 +1,23 @@
 import type { MetadataRoute } from "next";
-import { absoluteUrl } from "./lib/seo";
-import { catalogApi, fetchAllProducts } from "./lib/api/catalog";
+import { absoluteUrl, pagePath } from "./lib/seo";
+import { catalogApi, fetchAllProducts, type Category } from "./lib/api/catalog";
 import { ARTICLES } from "./journal/content";
 
 /**
- * Static, always-present pages. `/search` is deliberately absent — it is
- * disallowed in robots.txt as thin/duplicate content.
+ * Static, always-present pages. Paths for the three pages defined in
+ * `config/seo.json` are read from there rather than restated — that JSON is
+ * what `pageMetadata` builds each page's canonical from, and a sitemap `<loc>`
+ * disagreeing with the canonical is worse than no entry. `/shop` and
+ * `/journal` have no seo.json entry, so their paths live here.
+ *
+ * `/search` is deliberately absent — robots.txt disallows it as thin,
+ * near-duplicate content.
  */
 const STATIC_PAGES: { path: string; priority: number }[] = [
-  { path: "/", priority: 1 },
+  { path: pagePath("home"), priority: 1 },
   { path: "/shop", priority: 0.9 },
-  { path: "/our-standard", priority: 0.7 },
-  { path: "/sell", priority: 0.6 },
+  { path: pagePath("our-standard"), priority: 0.7 },
+  { path: pagePath("sell"), priority: 0.6 },
   { path: "/journal", priority: 0.5 },
 ];
 
@@ -45,8 +51,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Only top-level categories: `?category=` maps to the backend's
   // `categorySlug`, which resolves against `parentId: null` only, so a
   // subcategory URL would render an empty grid — a soft 404 in the sitemap.
+  //
+  // The same rule has to apply to a top-level category that simply has no
+  // products (a freshly created one, or one whose stock was all deactivated):
+  // it renders the identical empty grid. `hasProducts` reuses the product list
+  // already fetched above, so this costs no extra request.
+  const populated = new Set(products.map((product) => product.categoryId));
+  const hasProducts = (category: Category): boolean =>
+    populated.has(category.id) ||
+    (category.children ?? []).some((child) => populated.has(child.id));
+
   const categoryEntries: MetadataRoute.Sitemap = categories
-    .filter((category) => category.parentId === null)
+    .filter((category) => category.parentId === null && hasProducts(category))
     .map((category) => ({
       url: absoluteUrl(`/shop?category=${encodeURIComponent(category.slug)}`),
       lastModified: category.updatedAt ? new Date(category.updatedAt) : undefined,

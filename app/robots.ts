@@ -50,6 +50,5 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
       disallow: [...DISALLOWED_PATHS],
     },
     sitemap: absoluteUrl("/sitemap.xml"),
-    host: absoluteUrl("/"),
   };
 }

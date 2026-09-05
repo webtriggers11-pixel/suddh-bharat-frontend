@@ -27,6 +27,23 @@ describe("isIndexableHost (FEAT-027)", () => {
     expect(isIndexableHost("shuddha-preview-abc.up.railway.app")).toBe(false);
   });
 
+  /**
+   * A chain of proxies (a CDN in front of the host) joins the forwarded values
+   * into one header. The client-facing host is the first entry; comparing the
+   * whole string would serve Disallow: / on the real production host.
+   */
+  it("takes the first entry of a proxy-chained forwarded host", () => {
+    expect(isIndexableHost("shuddha.in, internal.railway.app")).toBe(true);
+    expect(isIndexableHost("shuddha.in,internal.railway.app")).toBe(true);
+    expect(isIndexableHost("preview.up.railway.app, shuddha.in")).toBe(false);
+  });
+
+  // A fully-qualified Host may carry a trailing dot.
+  it("accepts a fully-qualified host with a trailing dot", () => {
+    expect(isIndexableHost("shuddha.in.")).toBe(true);
+    expect(isIndexableHost("www.shuddha.in.:443")).toBe(true);
+  });
+
   // A look-alike domain must not be treated as our own site.
   it("rejects a host that merely contains the configured one", () => {
     expect(isIndexableHost("evil-shuddha.in")).toBe(false);

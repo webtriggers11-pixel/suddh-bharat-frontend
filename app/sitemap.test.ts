@@ -7,10 +7,10 @@ vi.mock("./lib/api/catalog", () => ({
   catalogApi: { categories: () => categories() },
   fetchAllProducts: () => fetchAllProducts(),
 }));
-vi.mock("./lib/seo", () => ({
-  absoluteUrl: (path: string) =>
-    path === "/" ? "https://shuddha.in" : `https://shuddha.in${path}`,
-}));
+// `./lib/seo` is deliberately NOT mocked: the URLs below are built by the real
+// `absoluteUrl` against the real config/seo.json, so the "every URL is
+// absolute and canonical" criterion is proven against production behaviour
+// rather than a stub that would agree with anything.
 vi.mock("./journal/content", () => ({
   ARTICLES: [{ slug: "why-we-built-shuddha", publishedAt: "2026-09-01" }],
 }));
@@ -67,17 +67,61 @@ describe("sitemap.xml (FEAT-027)", () => {
    */
   it("lists top-level categories only, never subcategories", async () => {
     categories.mockResolvedValue([
-      category({ id: "food", slug: "food" }),
+      category({
+        id: "food",
+        slug: "food",
+        children: [category({ id: "staples", slug: "staples", parentId: "food" })],
+      }),
       category({ id: "staples", slug: "staples", parentId: "food" }),
+    ]);
+    fetchAllProducts.mockResolvedValue([
+      { slug: "atta", categoryId: "staples" } as Product,
     ]);
     const list = await urls();
     expect(list).toContain("https://shuddha.in/shop?category=food");
     expect(list).not.toContain("https://shuddha.in/shop?category=staples");
   });
 
+  /**
+   * A top-level category with no products renders the same empty grid a
+   * subcategory URL would — the soft-404 the top-level-only rule exists to
+   * avoid. Reuses the already-fetched product list, so it costs no request.
+   */
+  it("skips a top-level category that has no products", async () => {
+    categories.mockResolvedValue([
+      category({ id: "food", slug: "food" }),
+      category({ id: "empty", slug: "empty" }),
+    ]);
+    fetchAllProducts.mockResolvedValue([
+      { slug: "atta", categoryId: "food" } as Product,
+    ]);
+    const list = await urls();
+    expect(list).toContain("https://shuddha.in/shop?category=food");
+    expect(list).not.toContain("https://shuddha.in/shop?category=empty");
+  });
+
+  // Products hang off subcategories, so a parent counts as populated when any
+  // of its children has one.
+  it("keeps a category whose products sit in its subcategories", async () => {
+    categories.mockResolvedValue([
+      category({
+        id: "food",
+        slug: "food",
+        children: [category({ id: "staples", slug: "staples", parentId: "food" })],
+      }),
+    ]);
+    fetchAllProducts.mockResolvedValue([
+      { slug: "atta", categoryId: "staples" } as Product,
+    ]);
+    expect(await urls()).toContain("https://shuddha.in/shop?category=food");
+  });
+
   it("uses the category's real updatedAt as lastModified", async () => {
     categories.mockResolvedValue([
-      category({ updatedAt: "2026-09-01T10:00:00.000Z" }),
+      category({ id: "food", updatedAt: "2026-09-01T10:00:00.000Z" }),
+    ]);
+    fetchAllProducts.mockResolvedValue([
+      { slug: "atta", categoryId: "food" } as Product,
     ]);
     const entry = (await sitemap()).find((e) => e.url.includes("?category="));
     expect(entry?.lastModified).toEqual(new Date("2026-09-01T10:00:00.000Z"));
@@ -113,8 +157,10 @@ describe("sitemap.xml (FEAT-027)", () => {
   });
 
   it("emits an absolute URL for every entry", async () => {
-    categories.mockResolvedValue([category({})]);
-    fetchAllProducts.mockResolvedValue([product("atta")]);
+    categories.mockResolvedValue([category({ id: "food" })]);
+    fetchAllProducts.mockResolvedValue([
+      { slug: "atta", categoryId: "food" } as Product,
+    ]);
     for (const url of await urls()) {
       expect(url.startsWith("https://shuddha.in")).toBe(true);
     }
