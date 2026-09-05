@@ -1,13 +1,18 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
 let requestHost: string | null = "shuddha.in";
+let forwardedHost: string | null = null;
 vi.mock("next/headers", () => ({
-  headers: async () => new Map([["host", requestHost]]) as unknown as Headers,
+  headers: async () =>
+    ({
+      get: (name: string) =>
+        name === "x-forwarded-host" ? forwardedHost : requestHost,
+    }) as unknown as Headers,
 }));
 
-const isCanonicalHost = vi.fn((host?: string | null) => host === "shuddha.in");
+const isIndexableHost = vi.fn((host?: string | null) => host === "shuddha.in");
 vi.mock("./lib/seo", () => ({
-  isCanonicalHost: (host?: string | null) => isCanonicalHost(host),
+  isIndexableHost: (host?: string | null) => isIndexableHost(host),
   absoluteUrl: (path: string) =>
     path === "/" ? "https://shuddha.in" : `https://shuddha.in${path}`,
 }));
@@ -16,6 +21,7 @@ const { default: robots, DISALLOWED_PATHS } = await import("./robots");
 
 beforeEach(() => {
   requestHost = "shuddha.in";
+  forwardedHost = null;
 });
 afterEach(() => vi.clearAllMocks());
 
@@ -73,7 +79,17 @@ describe("robots.txt (FEAT-027)", () => {
   it("decides from the request host, not the configured site URL", async () => {
     requestHost = "localhost:3005";
     await robots();
-    expect(isCanonicalHost).toHaveBeenLastCalledWith("localhost:3005");
+    expect(isIndexableHost).toHaveBeenLastCalledWith("localhost:3005");
+  });
+
+  // Behind a proxy, Host is the internal address; x-forwarded-host carries the
+  // public one, so it has to win or production would look non-canonical.
+  it("prefers x-forwarded-host when a proxy sets it", async () => {
+    requestHost = "internal-service.railway.internal";
+    forwardedHost = "shuddha.in";
+    const result = await robots();
+    expect(isIndexableHost).toHaveBeenLastCalledWith("shuddha.in");
+    expect(result.sitemap).toBe("https://shuddha.in/sitemap.xml");
   });
 
   it("keeps the disallow list free of duplicates", () => {

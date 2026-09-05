@@ -1,35 +1,47 @@
 import { describe, expect, it } from "vitest";
-import { CANONICAL_HOST, absoluteUrl, isCanonicalHost } from "./seo";
+import { CONFIGURED_HOST, absoluteUrl, isIndexableHost } from "./seo";
 
-describe("isCanonicalHost (FEAT-027)", () => {
-  it("accepts the production host", () => {
-    expect(CANONICAL_HOST).toBe("shuddha.in");
-    expect(isCanonicalHost("shuddha.in")).toBe(true);
+describe("isIndexableHost (FEAT-027)", () => {
+  it("accepts the host this deployment declares itself to be", () => {
+    expect(CONFIGURED_HOST).toBe("shuddha.in");
+    expect(isIndexableHost("shuddha.in")).toBe(true);
   });
 
-  it("ignores the port, so a proxied production host still matches", () => {
-    expect(isCanonicalHost("shuddha.in:443")).toBe(true);
+  /**
+   * Serving at www while the config names the apex (or the reverse) must NOT
+   * de-index production — that would be far worse than the preview-indexing
+   * problem this gate exists to prevent.
+   */
+  it("treats www and the apex as the same site", () => {
+    expect(isIndexableHost("www.shuddha.in")).toBe(true);
   });
 
-  it("is case-insensitive", () => {
-    expect(isCanonicalHost("Shuddha.IN")).toBe(true);
+  it("ignores the port and case", () => {
+    expect(isIndexableHost("shuddha.in:443")).toBe(true);
+    expect(isIndexableHost("Shuddha.IN")).toBe(true);
   });
 
   // The cases this exists for.
   it("rejects localhost and preview hosts", () => {
-    expect(isCanonicalHost("localhost:3005")).toBe(false);
-    expect(isCanonicalHost("shuddha-preview-abc.up.railway.app")).toBe(false);
+    expect(isIndexableHost("localhost:3005")).toBe(false);
+    expect(isIndexableHost("shuddha-preview-abc.up.railway.app")).toBe(false);
   });
 
-  // A look-alike domain must not be treated as production.
-  it("rejects a host that merely ends with the canonical one", () => {
-    expect(isCanonicalHost("evil-shuddha.in")).toBe(false);
-    expect(isCanonicalHost("shuddha.in.attacker.com")).toBe(false);
+  // A look-alike domain must not be treated as our own site.
+  it("rejects a host that merely contains the configured one", () => {
+    expect(isIndexableHost("evil-shuddha.in")).toBe(false);
+    expect(isIndexableHost("shuddha.in.attacker.com")).toBe(false);
+    expect(isIndexableHost("notshuddha.in")).toBe(false);
   });
 
-  it("falls back to the configured URL when there is no host header", () => {
-    expect(isCanonicalHost(null)).toBe(true);
-    expect(isCanonicalHost(undefined)).toBe(true);
+  /**
+   * No header means we cannot tell. Allow — wrongly blocking production is
+   * far more damaging than wrongly allowing a preview.
+   */
+  it("allows when there is no host header", () => {
+    expect(isIndexableHost(null)).toBe(true);
+    expect(isIndexableHost(undefined)).toBe(true);
+    expect(isIndexableHost("")).toBe(true);
   });
 });
 

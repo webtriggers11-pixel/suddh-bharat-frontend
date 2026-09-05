@@ -7,30 +7,44 @@ export const site = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? seo.site.url,
 };
 
-/** The production host from config/seo.json, ignoring any env override. */
-export const CANONICAL_HOST = new URL(seo.site.url).host;
-
-/**
- * True only on the real production host (FEAT-027). Preview deployments and
- * localhost must not be crawled, or they compete with production for the same
- * content in search results.
- *
- * Takes the host the request actually arrived on rather than trusting
- * `site.url`: a preview deploy that forgets to set `NEXT_PUBLIC_SITE_URL`
- * would otherwise report itself as production, which is precisely the case
- * worth catching. A missing header falls back to the configured URL.
- */
-export function isCanonicalHost(requestHost?: string | null): boolean {
-  if (requestHost) return stripPort(requestHost) === stripPort(CANONICAL_HOST);
+/** The host this deployment declares itself to be (env override wins). */
+export const CONFIGURED_HOST = (() => {
   try {
-    return stripPort(new URL(site.url).host) === stripPort(CANONICAL_HOST);
+    return new URL(site.url).host;
   } catch {
-    return false;
+    return new URL(seo.site.url).host;
   }
+})();
+
+/** Lowercase, drop any port, and treat `www.x` and `x` as the same site. */
+function normalizeHost(host: string): string {
+  return host
+    .trim()
+    .toLowerCase()
+    .replace(/:\d+$/, "")
+    .replace(/^www\./, "");
 }
 
-function stripPort(host: string): string {
-  return host.toLowerCase().replace(/:\d+$/, "");
+/**
+ * Whether a request arriving on `requestHost` is this site's own public host,
+ * and therefore safe to let search engines index (FEAT-027).
+ *
+ * Compared against `site.url` — what this deployment says it is — NOT against
+ * a hardcoded production domain. That matters: the app is deployed on Railway
+ * (`railway.json`), so before a custom domain is attached the public host is a
+ * `*.up.railway.app` URL. Hardcoding shuddha.in would have served
+ * `Disallow: /` on the real production site. Setting `NEXT_PUBLIC_SITE_URL` to
+ * whatever the deployment actually serves is the single source of truth.
+ *
+ * `www.` is stripped from both sides, so serving at the apex or at www is the
+ * same site either way — getting that wrong would de-index production.
+ *
+ * A missing header means we cannot tell, so we allow: wrongly blocking
+ * production is far more damaging than wrongly allowing a preview.
+ */
+export function isIndexableHost(requestHost?: string | null): boolean {
+  if (!requestHost) return true;
+  return normalizeHost(requestHost) === normalizeHost(CONFIGURED_HOST);
 }
 
 /** Absolute URL on the resolved site origin, e.g. "/shop" → "https://…/shop". */

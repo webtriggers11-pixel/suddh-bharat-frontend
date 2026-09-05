@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import type { MetadataRoute } from "next";
-import { absoluteUrl, isCanonicalHost } from "./lib/seo";
+import { absoluteUrl, isIndexableHost } from "./lib/seo";
 
 /**
  * Routes a crawler must never spend budget on (FEAT-027).
@@ -31,12 +31,15 @@ export const DISALLOWED_PATHS = [
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
   // A preview deployment or a local dev server must not be crawled at all — it
-  // would compete with production for the same content in search results. Read
-  // from the request host, not the configured URL, so a preview that forgets
-  // NEXT_PUBLIC_SITE_URL is still blocked. Reading a header makes this route
-  // dynamic; for a file this size that costs nothing.
-  const host = (await headers()).get("host");
-  if (!isCanonicalHost(host)) {
+  // would compete with production for the same content in search results.
+  // Decided from the host the request actually arrived on (behind a proxy,
+  // `x-forwarded-host` carries the public one), compared against what this
+  // deployment declares itself to be via NEXT_PUBLIC_SITE_URL. Reading a
+  // header makes this route dynamic; for a file this size that costs nothing.
+  const requestHeaders = await headers();
+  const host =
+    requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
+  if (!isIndexableHost(host)) {
     return { rules: { userAgent: "*", disallow: "/" } };
   }
 
