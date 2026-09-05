@@ -4,6 +4,7 @@ import { SiteHeader } from "./components/home/SiteHeader";
 import { Hero } from "./components/home/Hero";
 import { TrustLedger } from "./components/home/TrustLedger";
 import { CategoryShelf } from "./components/home/CategoryShelf";
+import { FeaturedProducts } from "./components/home/FeaturedProducts";
 import { WhyBand } from "./components/home/WhyBand";
 import { VerificationSteps } from "./components/home/VerificationSteps";
 import { FeaturedBrands } from "./components/home/FeaturedBrands";
@@ -23,6 +24,7 @@ export default function Home() {
         <Hero />
         <TrustLedger />
         <CategoryShelf />
+        <FeaturedProducts />
         <WhyBand />
         <VerificationSteps />
         <FeaturedBrands />
