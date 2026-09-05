@@ -17,7 +17,13 @@ export async function POST(req: NextRequest) {
     Array.isArray(body.tags) && body.tags.every((t) => typeof t === "string")
       ? (body.tags as string[])
       : ["products"];
-  // Next 16: second arg is the cache profile — 'max' = stale-while-revalidate.
-  for (const tag of tags) revalidateTag(tag, "max");
+  // Next 16: the second arg is the cache profile. `{ expire: 0 }` expires the
+  // tag immediately, so the NEXT request blocks on fresh data. The recommended
+  // "max" profile is stale-while-revalidate, which served the pre-change page
+  // once more after every admin edit — an admin toggling a product off still
+  // saw it on the storefront on the next load. Admin writes are rare, so paying
+  // for one uncached render is the right trade for read-your-own-writes.
+  // (`updateTag`, the other immediate option, is Server-Actions-only.)
+  for (const tag of tags) revalidateTag(tag, { expire: 0 });
   return NextResponse.json({ revalidated: tags });
 }
